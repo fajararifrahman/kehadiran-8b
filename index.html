@@ -1,197 +1,716 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Data Kehadiran Kelas 8B</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-  <style>
-    body { font-family: Arial, sans-serif; padding: 20px; background-color: #f4f4f4; }
-    .tabs button { margin-right: 10px; padding: 10px 15px; border: none; background-color: #3498db; color: #fff; cursor: pointer; border-radius: 5px; }
-    .tabs button:hover { background-color: #2980b9; }
-    .tab { display: none; margin-top: 20px; animation: fadeIn 0.5s; }
-    .tab.active { display: block; }
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-    table { width: 100%; border-collapse: collapse; margin-top: 10px; background: #fff; }
-    table, th, td { border: 1px solid #ccc; }
-    th, td { padding: 10px; text-align: left; }
-    .form-group { margin-bottom: 10px; }
-    .form-group label { display: block; margin-bottom: 5px; }
-    .form-group input, .form-group select { width: 100%; padding: 8px; }
-    button.action-btn { background-color: #2ecc71; color: #fff; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; }
-    button.action-btn:hover { background-color: #27ae60; }
-    button.delete-btn { background-color: #e74c3c; }
-    button.delete-btn:hover { background-color: #c0392b; }
-    .notif { margin-top: 15px; padding: 10px; background: #2ecc71; color: #fff; border-radius: 5px; display: none; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rekap Kehadiran Siswa Kelas 8B</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f0f4f8;
+        }
+        .tab-active {
+            border-bottom: 3px solid #3b82f6;
+            color: #3b82f6;
+            font-weight: 600;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .btn-primary {
+            background-color: #3b82f6;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .btn-primary:hover {
+            background-color: #2563eb;
+        }
+        .btn-danger {
+            background-color: #ef4444;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.375rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .btn-danger:hover {
+            background-color: #dc2626;
+        }
+        .btn-success {
+            background-color: #10b981;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .btn-success:hover {
+            background-color: #059669;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 0.75rem 1rem;
+            text-align: left;
+        }
+        th {
+            background-color: #e5e7eb;
+            font-weight: 600;
+        }
+        tr:nth-child(even) {
+            background-color: #f9fafb;
+        }
+        tr:hover {
+            background-color: #f3f4f6;
+        }
+        .attendance-status {
+            padding: 0.25rem 0.5rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        .status-H {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+        .status-I {
+            background-color: #e0f2fe;
+            color: #0369a1;
+        }
+        .status-S {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+        .status-A {
+            background-color: #fee2e2;
+            color: #b91c1c;
+        }
+    </style>
 </head>
 <body>
-  <h1><i class="fas fa-user-check"></i> Kehadiran Siswa Kelas 8B</h1>
-  <div class="tabs">
-    <button onclick="showTab('tabSiswa')"><i class="fas fa-users"></i> Siswa</button>
-    <button onclick="showTab('tabKehadiran')"><i class="fas fa-calendar-check"></i> Kehadiran</button>
-    <button onclick="showTab('tabRekap')"><i class="fas fa-chart-bar"></i> Rekap</button>
-  </div>
+    <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50">
+        <header class="bg-white shadow-md">
+            <div class="container mx-auto px-4 py-6">
+                <h1 class="text-2xl font-bold text-gray-800">Rekap Kehadiran Siswa Kelas 8B</h1>
+            </div>
+        </header>
 
-  <div id="tabSiswa" class="tab">
-    <h2>Data Siswa</h2>
-    <div class="form-group">
-      <label>NIS:</label>
-      <input type="text" id="nis">
+        <main class="container mx-auto px-4 py-8">
+            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                <!-- Tab Navigation -->
+                <div class="flex border-b">
+                    <button class="tab-btn px-6 py-4 tab-active" data-tab="siswa">Data Siswa</button>
+                    <button class="tab-btn px-6 py-4" data-tab="kehadiran">Kehadiran</button>
+                    <button class="tab-btn px-6 py-4" data-tab="rekap">Rekap Kehadiran</button>
+                </div>
+
+                <!-- Tab Content -->
+                <div class="p-6">
+                    <!-- Tab Siswa -->
+                    <div id="siswa" class="tab-content active">
+                        <div class="mb-6 bg-blue-50 p-4 rounded-lg">
+                            <h2 class="text-lg font-semibold mb-4">Tambah Siswa Baru</h2>
+                            <form id="form-siswa" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">NIS</label>
+                                    <input type="text" id="nis" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Nama Siswa</label>
+                                    <input type="text" id="nama" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Jenis Kelamin</label>
+                                    <select id="jenis-kelamin" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                                        <option value="">Pilih Jenis Kelamin</option>
+                                        <option value="Laki-laki">Laki-laki</option>
+                                        <option value="Perempuan">Perempuan</option>
+                                    </select>
+                                </div>
+                                <div class="md:col-span-3">
+                                    <button type="submit" class="btn-primary">Tambah Siswa</button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <div>
+                            <h2 class="text-lg font-semibold mb-4">Daftar Siswa</h2>
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full">
+                                    <thead>
+                                        <tr>
+                                            <th>No</th>
+                                            <th>NIS</th>
+                                            <th>Nama Siswa</th>
+                                            <th>Jenis Kelamin</th>
+                                            <th>Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="daftar-siswa">
+                                        <!-- Data siswa akan ditampilkan di sini -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab Kehadiran -->
+                    <div id="kehadiran" class="tab-content">
+                        <div class="mb-6">
+                            <h2 class="text-lg font-semibold mb-4">Input Kehadiran</h2>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal</label>
+                                    <input type="date" id="tanggal-kehadiran" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                                </div>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full">
+                                    <thead>
+                                        <tr>
+                                            <th>No</th>
+                                            <th>NIS</th>
+                                            <th>Nama Siswa</th>
+                                            <th>Status Kehadiran</th>
+                                            <th>Keterangan</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="daftar-kehadiran">
+                                        <!-- Data kehadiran akan ditampilkan di sini -->
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="mt-4">
+                                <button id="simpan-kehadiran" class="btn-primary">Simpan Kehadiran</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab Rekap -->
+                    <div id="rekap" class="tab-content">
+                        <div class="mb-6">
+                            <h2 class="text-lg font-semibold mb-4">Rekap Kehadiran</h2>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Awal</label>
+                                    <input type="date" id="tanggal-awal" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Akhir</label>
+                                    <input type="date" id="tanggal-akhir" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                                </div>
+                                <div class="flex items-end">
+                                    <button id="generate-rekap" class="btn-primary">Generate Rekap</button>
+                                </div>
+                            </div>
+                            
+                            <div id="hasil-rekap" class="hidden">
+                                <div class="mb-4">
+                                    <button id="export-excel" class="btn-success flex items-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                        </svg>
+                                        Export Excel
+                                    </button>
+                                </div>
+                                <div class="overflow-x-auto">
+                                    <table class="min-w-full">
+                                        <thead>
+                                            <tr>
+                                                <th>No</th>
+                                                <th>NIS</th>
+                                                <th>Nama Siswa</th>
+                                                <th>Detail</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="daftar-rekap">
+                                            <!-- Data rekap akan ditampilkan di sini -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer class="bg-white shadow-inner mt-8">
+            <div class="container mx-auto px-4 py-6 text-center text-gray-600">
+                &copy; 2023 Rekap Kehadiran Siswa Kelas 8B
+            </div>
+        </footer>
     </div>
-    <div class="form-group">
-      <label>Nama Siswa:</label>
-      <input type="text" id="nama">
+
+    <!-- Modal Detail Kehadiran -->
+    <div id="modal-detail" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="bg-white rounded-lg shadow-lg w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-semibold" id="modal-title">Detail Kehadiran</h3>
+                    <button id="close-modal" class="text-gray-500 hover:text-gray-700">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                <div id="modal-content">
+                    <!-- Detail kehadiran akan ditampilkan di sini -->
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="form-group">
-      <label>Jenis Kelamin:</label>
-      <select id="jk">
-        <option value="L">Laki-laki</option>
-        <option value="P">Perempuan</option>
-      </select>
-    </div>
-    <button class="action-btn" onclick="tambahSiswa()"><i class="fas fa-plus"></i> Tambah Siswa</button>
-    <table id="tabelSiswa">
-      <thead><tr><th>No</th><th>NIS</th><th>Nama</th><th>JK</th><th>Aksi</th></tr></thead>
-      <tbody></tbody>
-    </table>
-    <div id="notifSiswa" class="notif">Siswa berhasil ditambahkan!</div>
-  </div>
 
-  <div id="tabKehadiran" class="tab">
-    <h2>Input Kehadiran</h2>
-    <div class="form-group">
-      <label>Tanggal:</label>
-      <input type="date" id="tanggal">
-    </div>
-    <form id="formKehadiran"></form>
-    <button class="action-btn" onclick="simpanKehadiran()"><i class="fas fa-save"></i> Simpan Kehadiran</button>
-    <div id="notifKehadiran" class="notif">Data kehadiran berhasil disimpan!</div>
-    <div id="tabelKehadiran"></div>
-  </div>
+    <script>
+        // Data storage
+        let dataSiswa = JSON.parse(localStorage.getItem('dataSiswa')) || [];
+        let dataKehadiran = JSON.parse(localStorage.getItem('dataKehadiran')) || [];
 
-  <div id="tabRekap" class="tab">
-    <h2>Rekap Kehadiran</h2>
-    <div class="form-group">
-      <label>Tanggal Awal:</label>
-      <input type="date" id="tanggalAwal">
-    </div>
-    <div class="form-group">
-      <label>Tanggal Akhir:</label>
-      <input type="date" id="tanggalAkhir">
-    </div>
-    <button class="action-btn" onclick="generateRekap()"><i class="fas fa-filter"></i> Generate Rekap</button>
-    <button class="action-btn" onclick="exportExcel()"><i class="fas fa-file-excel"></i> Export Excel</button>
-    <div id="rekapHasil"></div>
-  </div>
+        // Tab functionality
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        const tabContents = document.querySelectorAll('.tab-content');
 
-  <script>
-    // Firebase Config
-    const firebaseConfig = {
-      apiKey: "AIzaSyA3ENcWsQfT6RG1YRj0jfzMg4pQE2GoJj0",
-      authDomain: "kehadiran8b.firebaseapp.com",
-      projectId: "kehadiran8b",
-      storageBucket: "kehadiran8b.appspot.com",
-      messagingSenderId: "169447081278",
-      appId: "1:169447081278:web:2a2fad2157b47e8715186f",
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const tabId = btn.getAttribute('data-tab');
+                
+                tabBtns.forEach(b => b.classList.remove('tab-active'));
+                tabContents.forEach(c => c.classList.remove('active'));
+                
+                btn.classList.add('tab-active');
+                document.getElementById(tabId).classList.add('active');
+                
+                if (tabId === 'kehadiran') {
+                    renderKehadiranForm();
+                }
+            });
+        });
 
-    let siswaList = [];
+        // Form Siswa
+        const formSiswa = document.getElementById('form-siswa');
+        formSiswa.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const nis = document.getElementById('nis').value;
+            const nama = document.getElementById('nama').value;
+            const jenisKelamin = document.getElementById('jenis-kelamin').value;
+            
+            // Check if NIS already exists
+            if (dataSiswa.some(siswa => siswa.nis === nis)) {
+                alert('NIS sudah terdaftar!');
+                return;
+            }
+            
+            dataSiswa.push({
+                nis,
+                nama,
+                jenisKelamin
+            });
+            
+            localStorage.setItem('dataSiswa', JSON.stringify(dataSiswa));
+            
+            formSiswa.reset();
+            renderDaftarSiswa();
+        });
 
-    function showTab(tabId) {
-      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-      document.getElementById(tabId).classList.add('active');
-      if (tabId === 'tabKehadiran') refreshFormKehadiran();
-    }
+        // Render Daftar Siswa
+        function renderDaftarSiswa() {
+            const daftarSiswa = document.getElementById('daftar-siswa');
+            daftarSiswa.innerHTML = '';
+            
+            if (dataSiswa.length === 0) {
+                daftarSiswa.innerHTML = '<tr><td colspan="5" class="text-center py-4">Belum ada data siswa</td></tr>';
+                return;
+            }
+            
+            dataSiswa.forEach((siswa, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${siswa.nis}</td>
+                    <td>${siswa.nama}</td>
+                    <td>${siswa.jenisKelamin}</td>
+                    <td>
+                        <button class="btn-danger hapus-siswa" data-nis="${siswa.nis}">Hapus</button>
+                    </td>
+                `;
+                daftarSiswa.appendChild(row);
+            });
+            
+            // Add event listeners to delete buttons
+            document.querySelectorAll('.hapus-siswa').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const nis = btn.getAttribute('data-nis');
+                    hapusSiswa(nis);
+                });
+            });
+        }
 
-    function tambahSiswa() {
-      const nis = document.getElementById('nis').value.trim();
-      const nama = document.getElementById('nama').value.trim();
-      const jk = document.getElementById('jk').value;
-      if (nis && nama) {
-        const siswa = { nis, nama, jk };
-        siswaList.push(siswa);
-        db.ref('siswa/' + nis).set(siswa);
-        refreshSiswa();
-        document.getElementById('nis').value = '';
-        document.getElementById('nama').value = '';
-        document.getElementById('notifSiswa').style.display = 'block';
-        setTimeout(() => document.getElementById('notifSiswa').style.display = 'none', 2000);
-      }
-    }
+        // Hapus Siswa
+        function hapusSiswa(nis) {
+            if (confirm('Apakah Anda yakin ingin menghapus siswa ini?')) {
+                dataSiswa = dataSiswa.filter(siswa => siswa.nis !== nis);
+                dataKehadiran = dataKehadiran.filter(kehadiran => kehadiran.nis !== nis);
+                
+                localStorage.setItem('dataSiswa', JSON.stringify(dataSiswa));
+                localStorage.setItem('dataKehadiran', JSON.stringify(dataKehadiran));
+                
+                renderDaftarSiswa();
+            }
+        }
 
-    function refreshSiswa() {
-      const tbody = document.querySelector('#tabelSiswa tbody');
-      tbody.innerHTML = '';
-      siswaList.forEach((siswa, idx) => {
-        const row = `<tr><td>${idx + 1}</td><td>${siswa.nis}</td><td>${siswa.nama}</td><td>${siswa.jk}</td><td><button class='delete-btn' onclick='hapusSiswa(${idx})'>Hapus</button></td></tr>`;
-        tbody.innerHTML += row;
-      });
-    }
+        // Render Kehadiran Form
+        function renderKehadiranForm() {
+            const tanggalKehadiran = document.getElementById('tanggal-kehadiran');
+            const today = new Date().toISOString().split('T')[0];
+            tanggalKehadiran.value = today;
+            
+            renderDaftarKehadiran(today);
+            
+            tanggalKehadiran.addEventListener('change', () => {
+                renderDaftarKehadiran(tanggalKehadiran.value);
+            });
+        }
 
-    function hapusSiswa(index) {
-      const nis = siswaList[index].nis;
-      db.ref('siswa/' + nis).remove();
-      siswaList.splice(index, 1);
-      refreshSiswa();
-    }
+        // Render Daftar Kehadiran
+        function renderDaftarKehadiran(tanggal) {
+            const daftarKehadiran = document.getElementById('daftar-kehadiran');
+            daftarKehadiran.innerHTML = '';
+            
+            if (dataSiswa.length === 0) {
+                daftarKehadiran.innerHTML = '<tr><td colspan="5" class="text-center py-4">Belum ada data siswa</td></tr>';
+                return;
+            }
+            
+            dataSiswa.forEach((siswa, index) => {
+                // Check if attendance data exists for this student on this date
+                const existingData = dataKehadiran.find(k => k.nis === siswa.nis && k.tanggal === tanggal);
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${siswa.nis}</td>
+                    <td>${siswa.nama}</td>
+                    <td>
+                        <select class="status-kehadiran w-full px-2 py-1 border border-gray-300 rounded-md" data-nis="${siswa.nis}">
+                            <option value="H" ${existingData && existingData.status === 'H' ? 'selected' : ''}>Hadir</option>
+                            <option value="I" ${existingData && existingData.status === 'I' ? 'selected' : ''}>Ijin</option>
+                            <option value="S" ${existingData && existingData.status === 'S' ? 'selected' : ''}>Sakit</option>
+                            <option value="A" ${existingData && existingData.status === 'A' ? 'selected' : ''}>Alpha</option>
+                        </select>
+                    </td>
+                    <td>
+                        <input type="text" class="keterangan w-full px-2 py-1 border border-gray-300 rounded-md" data-nis="${siswa.nis}" value="${existingData ? existingData.keterangan : ''}">
+                    </td>
+                `;
+                daftarKehadiran.appendChild(row);
+            });
+        }
 
-    function refreshFormKehadiran() {
-      const container = document.getElementById('formKehadiran');
-      container.innerHTML = '';
-      siswaList.forEach((siswa, idx) => {
-        container.innerHTML += `
-          <div style="margin-bottom:10px; background:#fff; padding:10px; border:1px solid #ccc">
-            <strong>${siswa.nama}</strong><br>
-            <label>Status Kehadiran:</label>
-            <select id="status_${idx}">
-              <option value="H">Hadir</option>
-              <option value="I">Izin</option>
-              <option value="S">Sakit</option>
-              <option value="A">Alpha</option>
-            </select>
-            <label>Keterangan:</label>
-            <input type="text" id="ket_${idx}" placeholder="Opsional...">
-          </div>
-        `;
-      });
-    }
+        // Simpan Kehadiran
+        document.getElementById('simpan-kehadiran').addEventListener('click', () => {
+            const tanggal = document.getElementById('tanggal-kehadiran').value;
+            const statusElements = document.querySelectorAll('.status-kehadiran');
+            const keteranganElements = document.querySelectorAll('.keterangan');
+            
+            if (!tanggal) {
+                alert('Pilih tanggal terlebih dahulu!');
+                return;
+            }
+            
+            // Remove existing attendance data for this date
+            dataKehadiran = dataKehadiran.filter(k => k.tanggal !== tanggal);
+            
+            // Add new attendance data
+            statusElements.forEach((element, index) => {
+                const nis = element.getAttribute('data-nis');
+                const status = element.value;
+                const keterangan = keteranganElements[index].value;
+                
+                dataKehadiran.push({
+                    tanggal,
+                    nis,
+                    status,
+                    keterangan
+                });
+            });
+            
+            localStorage.setItem('dataKehadiran', JSON.stringify(dataKehadiran));
+            alert('Data kehadiran berhasil disimpan!');
+        });
 
-    function simpanKehadiran() {
-      const tanggal = document.getElementById('tanggal').value;
-      if (!tanggal) return alert("Tanggal wajib diisi!");
-      const kehadiran = siswaList.map((siswa, idx) => {
-        return {
-          nis: siswa.nis,
-          nama: siswa.nama,
-          status: document.getElementById(`status_${idx}`).value,
-          keterangan: document.getElementById(`ket_${idx}`).value,
-          tanggal: tanggal
-        };
-      });
-      kehadiran.forEach(data => {
-        db.ref('kehadiran/' + data.nis + '/' + data.tanggal).set(data);
-      });
-      document.getElementById('notifKehadiran').style.display = 'block';
-      setTimeout(() => document.getElementById('notifKehadiran').style.display = 'none', 2000);
-    }
+        // Generate Rekap
+        document.getElementById('generate-rekap').addEventListener('click', () => {
+            const tanggalAwal = document.getElementById('tanggal-awal').value;
+            const tanggalAkhir = document.getElementById('tanggal-akhir').value;
+            
+            if (!tanggalAwal || !tanggalAkhir) {
+                alert('Pilih tanggal awal dan tanggal akhir terlebih dahulu!');
+                return;
+            }
+            
+            if (tanggalAwal > tanggalAkhir) {
+                alert('Tanggal awal tidak boleh lebih besar dari tanggal akhir!');
+                return;
+            }
+            
+            renderRekapKehadiran(tanggalAwal, tanggalAkhir);
+            document.getElementById('hasil-rekap').classList.remove('hidden');
+        });
 
-    function loadSiswaFromFirebase() {
-      db.ref('siswa').once('value', snapshot => {
-        siswaList = [];
-        snapshot.forEach(child => siswaList.push(child.val()));
-        refreshSiswa();
-      });
-    }
+        // Render Rekap Kehadiran
+        function renderRekapKehadiran(tanggalAwal, tanggalAkhir) {
+            const daftarRekap = document.getElementById('daftar-rekap');
+            daftarRekap.innerHTML = '';
+            
+            if (dataSiswa.length === 0) {
+                daftarRekap.innerHTML = '<tr><td colspan="4" class="text-center py-4">Belum ada data siswa</td></tr>';
+                return;
+            }
+            
+            dataSiswa.forEach((siswa, index) => {
+                // Get attendance data for this student within date range
+                const kehadiranSiswa = dataKehadiran.filter(k => 
+                    k.nis === siswa.nis && 
+                    k.tanggal >= tanggalAwal && 
+                    k.tanggal <= tanggalAkhir
+                );
+                
+                // Count attendance status
+                const totalHadir = kehadiranSiswa.filter(k => k.status === 'H').length;
+                const totalIjin = kehadiranSiswa.filter(k => k.status === 'I').length;
+                const totalSakit = kehadiranSiswa.filter(k => k.status === 'S').length;
+                const totalAlpha = kehadiranSiswa.filter(k => k.status === 'A').length;
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${siswa.nis}</td>
+                    <td>${siswa.nama}</td>
+                    <td>
+                        <button class="btn-primary detail-kehadiran" 
+                                data-nis="${siswa.nis}" 
+                                data-nama="${siswa.nama}"
+                                data-tanggal-awal="${tanggalAwal}"
+                                data-tanggal-akhir="${tanggalAkhir}"
+                                data-hadir="${totalHadir}"
+                                data-ijin="${totalIjin}"
+                                data-sakit="${totalSakit}"
+                                data-alpha="${totalAlpha}">
+                            Lihat Detail
+                        </button>
+                    </td>
+                `;
+                daftarRekap.appendChild(row);
+            });
+            
+            // Add event listeners to detail buttons
+            document.querySelectorAll('.detail-kehadiran').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const nis = btn.getAttribute('data-nis');
+                    const nama = btn.getAttribute('data-nama');
+                    const tanggalAwal = btn.getAttribute('data-tanggal-awal');
+                    const tanggalAkhir = btn.getAttribute('data-tanggal-akhir');
+                    const totalHadir = btn.getAttribute('data-hadir');
+                    const totalIjin = btn.getAttribute('data-ijin');
+                    const totalSakit = btn.getAttribute('data-sakit');
+                    const totalAlpha = btn.getAttribute('data-alpha');
+                    
+                    showDetailKehadiran(nis, nama, tanggalAwal, tanggalAkhir, totalHadir, totalIjin, totalSakit, totalAlpha);
+                });
+            });
+        }
 
-    document.addEventListener('DOMContentLoaded', () => {
-      showTab('tabSiswa');
-      loadSiswaFromFirebase();
-    });
-  </script>
-</body>
+        // Show Detail Kehadiran
+        function showDetailKehadiran(nis, nama, tanggalAwal, tanggalAkhir, totalHadir, totalIjin, totalSakit, totalAlpha) {
+            const modal = document.getElementById('modal-detail');
+            const modalTitle = document.getElementById('modal-title');
+            const modalContent = document.getElementById('modal-content');
+            
+            modalTitle.textContent = `Detail Kehadiran - ${nama}`;
+            
+            // Get all dates between tanggalAwal and tanggalAkhir
+            const dates = getDatesInRange(new Date(tanggalAwal), new Date(tanggalAkhir));
+            
+            let tableContent = `
+                <div class="overflow-x-auto">
+                    <table class="min-w-full mb-6">
+                        <thead>
+                            <tr>
+                                <th>Tanggal</th>
+                                <th>Status</th>
+                                <th>Keterangan</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
+            dates.forEach(date => {
+                const formattedDate = date.toISOString().split('T')[0];
+                const kehadiran = dataKehadiran.find(k => k.nis === nis && k.tanggal === formattedDate);
+                
+                let statusText = '-';
+                let statusClass = '';
+                
+                if (kehadiran) {
+                    switch (kehadiran.status) {
+                        case 'H':
+                            statusText = 'Hadir';
+                            statusClass = 'status-H';
+                            break;
+                        case 'I':
+                            statusText = 'Ijin';
+                            statusClass = 'status-I';
+                            break;
+                        case 'S':
+                            statusText = 'Sakit';
+                            statusClass = 'status-S';
+                            break;
+                        case 'A':
+                            statusText = 'Alpha';
+                            statusClass = 'status-A';
+                            break;
+                    }
+                }
+                
+                tableContent += `
+                    <tr>
+                        <td>${formatDate(formattedDate)}</td>
+                        <td><span class="attendance-status ${statusClass}">${statusText}</span></td>
+                        <td>${kehadiran ? kehadiran.keterangan : '-'}</td>
+                    </tr>
+                `;
+            });
+            
+            tableContent += `
+                        </tbody>
+                    </table>
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="bg-green-50 p-4 rounded-lg text-center">
+                        <div class="text-2xl font-bold text-green-600">${totalHadir}</div>
+                        <div class="text-sm text-green-800">Total Hadir</div>
+                    </div>
+                    <div class="bg-blue-50 p-4 rounded-lg text-center">
+                        <div class="text-2xl font-bold text-blue-600">${totalIjin}</div>
+                        <div class="text-sm text-blue-800">Total Ijin</div>
+                    </div>
+                    <div class="bg-yellow-50 p-4 rounded-lg text-center">
+                        <div class="text-2xl font-bold text-yellow-600">${totalSakit}</div>
+                        <div class="text-sm text-yellow-800">Total Sakit</div>
+                    </div>
+                    <div class="bg-red-50 p-4 rounded-lg text-center">
+                        <div class="text-2xl font-bold text-red-600">${totalAlpha}</div>
+                        <div class="text-sm text-red-800">Total Alpha</div>
+                    </div>
+                </div>
+            `;
+            
+            modalContent.innerHTML = tableContent;
+            modal.classList.remove('hidden');
+        }
+
+        // Close Modal
+        document.getElementById('close-modal').addEventListener('click', () => {
+            document.getElementById('modal-detail').classList.add('hidden');
+        });
+
+        // Export Excel
+        document.getElementById('export-excel').addEventListener('click', () => {
+            const tanggalAwal = document.getElementById('tanggal-awal').value;
+            const tanggalAkhir = document.getElementById('tanggal-akhir').value;
+            
+            if (!tanggalAwal || !tanggalAkhir) {
+                alert('Pilih tanggal awal dan tanggal akhir terlebih dahulu!');
+                return;
+            }
+            
+            exportToExcel(tanggalAwal, tanggalAkhir);
+        });
+
+        // Export to Excel function
+        function exportToExcel(tanggalAwal, tanggalAkhir) {
+            // Get all dates between tanggalAwal and tanggalAkhir
+            const dates = getDatesInRange(new Date(tanggalAwal), new Date(tanggalAkhir));
+            
+            // Create header row with dates
+            const headerRow = ['No', 'Nama Siswa'];
+            dates.forEach(date => {
+                headerRow.push(formatDate(date.toISOString().split('T')[0]));
+            });
+            
+            // Create data rows
+            const dataRows = [];
+            dataSiswa.forEach((siswa, index) => {
+                const row = [index + 1, siswa.nama];
+                
+                dates.forEach(date => {
+                    const formattedDate = date.toISOString().split('T')[0];
+                    const kehadiran = dataKehadiran.find(k => k.nis === siswa.nis && k.tanggal === formattedDate);
+                    
+                    if (kehadiran) {
+                        row.push(kehadiran.status);
+                    } else {
+                        row.push('-');
+                    }
+                });
+                
+                dataRows.push(row);
+            });
+            
+            // Add legend
+            dataRows.push([]);
+            dataRows.push(['Keterangan:']);
+            dataRows.push(['H', 'Hadir']);
+            dataRows.push(['S', 'Sakit']);
+            dataRows.push(['I', 'Ijin']);
+            dataRows.push(['A', 'Alpha']);
+            
+            // Create worksheet
+            const ws = XLSX.utils.aoa_to_sheet([headerRow, ...dataRows]);
+            
+            // Create workbook
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Rekap Kehadiran');
+            
+            // Generate Excel file
+            const fileName = `Rekap_Kehadiran_${tanggalAwal}_${tanggalAkhir}.xlsx`;
+            XLSX.writeFile(wb, fileName);
+        }
+
+        // Helper function to get all dates between two dates
+        function getDatesInRange(startDate, endDate) {
+            const dates = [];
+            let currentDate = new Date(startDate);
+            
+            while (currentDate <= endDate) {
+                dates.push(new Date(currentDate));
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+            
+            return dates;
+        }
+
+        // Helper function to format date
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        }
+
+        // Initialize
+        renderDaftarSiswa();
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9632381641d662f7',t:'MTc1MzE3OTc2OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
