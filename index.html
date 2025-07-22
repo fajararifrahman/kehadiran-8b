@@ -109,8 +109,8 @@
             color: black;
         }
         .status-icon {
-            font-size: 24px;
-            margin-bottom: 4px;
+            font-size: 18px; /* Reduced from 24px */
+            margin-bottom: 2px; /* Reduced from 4px */
         }
         
         /* Print styles */
@@ -256,11 +256,11 @@
                         <table class="min-w-full bg-white border border-gray-200">
                             <thead>
                                 <tr class="bg-gray-100">
-                                    <th class="py-3 px-4 border-b text-left">No</th>
-                                    <th class="py-3 px-4 border-b text-left">NIS</th>
-                                    <th class="py-3 px-4 border-b text-left">Nama Siswa</th>
-                                    <th class="py-3 px-4 border-b text-left">Status Kehadiran</th>
-                                    <th class="py-3 px-4 border-b text-left">Keterangan</th>
+                                    <th class="py-2 px-3 border-b text-left text-sm">No</th>
+                                    <th class="py-2 px-3 border-b text-left text-sm">NIS</th>
+                                    <th class="py-2 px-3 border-b text-left text-sm">Nama Siswa</th>
+                                    <th class="py-2 px-3 border-b text-left text-sm">Status Kehadiran</th>
+                                    <th class="py-2 px-3 border-b text-left text-sm">Keterangan</th>
                                 </tr>
                             </thead>
                             <tbody id="daftar-kehadiran">
@@ -536,35 +536,35 @@
                 
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td class="py-3 px-4 border-b">${index + 1}</td>
-                    <td class="py-3 px-4 border-b">${siswa.nis}</td>
-                    <td class="py-3 px-4 border-b">${siswa.nama}</td>
-                    <td class="py-3 px-4 border-b">
-                        <div class="flex space-x-3">
-                            <div class="attendance-option p-2 rounded-md border text-center ${status === 'H' ? 'selected' : ''}" 
+                    <td class="py-2 px-3 border-b text-sm">${index + 1}</td>
+                    <td class="py-2 px-3 border-b text-sm">${siswa.nis}</td>
+                    <td class="py-2 px-3 border-b text-sm">${siswa.nama}</td>
+                    <td class="py-2 px-3 border-b">
+                        <div class="flex space-x-2">
+                            <div class="attendance-option p-1 rounded-md border text-center ${status === 'H' ? 'selected' : ''}" 
                                  data-nis="${siswa.nis}" data-status="H">
                                 <div class="status-icon text-green-600">✓</div>
-                                <span class="block text-center text-sm font-medium">Hadir</span>
+                                <span class="block text-center text-xs font-medium">Hadir</span>
                             </div>
-                            <div class="attendance-option p-2 rounded-md border text-center ${status === 'I' ? 'selected' : ''}" 
+                            <div class="attendance-option p-1 rounded-md border text-center ${status === 'I' ? 'selected' : ''}" 
                                  data-nis="${siswa.nis}" data-status="I">
                                 <div class="status-icon text-yellow-600">📝</div>
-                                <span class="block text-center text-sm font-medium">Ijin</span>
+                                <span class="block text-center text-xs font-medium">Ijin</span>
                             </div>
-                            <div class="attendance-option p-2 rounded-md border text-center ${status === 'S' ? 'selected' : ''}" 
+                            <div class="attendance-option p-1 rounded-md border text-center ${status === 'S' ? 'selected' : ''}" 
                                  data-nis="${siswa.nis}" data-status="S">
                                 <div class="status-icon text-blue-600">🤒</div>
-                                <span class="block text-center text-sm font-medium">Sakit</span>
+                                <span class="block text-center text-xs font-medium">Sakit</span>
                             </div>
-                            <div class="attendance-option p-2 rounded-md border text-center ${status === 'A' ? 'selected' : ''}" 
+                            <div class="attendance-option p-1 rounded-md border text-center ${status === 'A' ? 'selected' : ''}" 
                                  data-nis="${siswa.nis}" data-status="A">
                                 <div class="status-icon text-red-600">❌</div>
-                                <span class="block text-center text-sm font-medium">Alpha</span>
+                                <span class="block text-center text-xs font-medium">Alpha</span>
                             </div>
                         </div>
                     </td>
-                    <td class="py-3 px-4 border-b">
-                        <input type="text" class="keterangan-input w-full px-3 py-1 border border-gray-300 rounded-md" 
+                    <td class="py-2 px-3 border-b">
+                        <input type="text" class="keterangan-input w-full px-2 py-1 text-sm border border-gray-300 rounded-md" 
                                data-nis="${siswa.nis}" value="${keterangan}">
                     </td>
                 `;
@@ -766,7 +766,7 @@
             document.getElementById('modal-detail').style.display = 'block';
         }
         
-        // Cetak Kehadiran (Print)
+        // Cetak Kehadiran (Print) - Modified to remove window.print()
         function cetakKehadiran(nis, namaSiswa, tanggalAwal, tanggalAkhir) {
             // Get student data
             const siswa = dataSiswa.find(s => s.nis === nis);
@@ -849,13 +849,18 @@
             // Set the document title for the PDF
             document.title = `Rekap Kehadiran - ${siswa.nama}`;
             
-            // Show print dialog
+            // Display the print container (but don't trigger print dialog)
             printContainer.style.display = 'block';
-            window.print();
-            printContainer.style.display = 'none';
             
-            // Reset document title
-            document.title = "Sistem Kehadiran Siswa Kelas 8B";
+            // Alert user that print functionality is disabled
+            alert('Fitur cetak telah dinonaktifkan sesuai permintaan.');
+            
+            // Hide the print container after a short delay
+            setTimeout(() => {
+                printContainer.style.display = 'none';
+                // Reset document title
+                document.title = "Sistem Kehadiran Siswa Kelas 8B";
+            }, 3000);
         }
         
         // Export to Excel
@@ -1113,5 +1118,5 @@
         const day = String(today.getDate()).padStart(2, '0');
         document.getElementById('tanggal-kehadiran').value = `${year}-${month}-${day}`;
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'963319f1f496fdce',t:'MTc1MzE4OTAyMC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9633678fc79ccdf1',t:'MTc1MzE5MjE5OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
