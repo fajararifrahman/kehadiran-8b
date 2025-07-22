@@ -794,19 +794,18 @@
             const printContainer = document.getElementById('print-container');
             printContainer.innerHTML = `
                 <div style="padding: 20px; font-family: Arial, sans-serif;">
-                    <h1 style="text-align: center; margin-bottom: 10px;">Laporan Kehadiran Siswa</h1>
+                    <h1 style="text-align: center; margin-bottom: 10px; font-weight: bold; font-size: 18px;">REKAP KEHADIRAN SISWA KELAS 8B</h1>
                     <p style="text-align: center; margin-bottom: 20px;">Periode: ${formatDateMonthYear(tanggalAwal)} - ${formatDateMonthYear(tanggalAkhir)}</p>
                     
                     <div style="margin-bottom: 20px;">
                         <p><strong>NIS:</strong> ${siswa.nis}</p>
-                        <p><strong>Nama Siswa:</strong> ${siswa.nama}</p>
-                        <p><strong>Jenis Kelamin:</strong> ${siswa.jenisKelamin}</p>
+                        <p><strong>Nama:</strong> ${siswa.nama}</p>
                     </div>
                     
                     <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
                         <thead>
                             <tr style="background-color: #f2f2f2;">
-                                <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">No</th>
+                                <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">No.</th>
                                 <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Tanggal</th>
                                 <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Status Kehadiran</th>
                                 <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Keterangan</th>
@@ -940,6 +939,26 @@
             // Style the title (merge cells)
             if (!ws['!merges']) ws['!merges'] = [];
             ws['!merges'].push({ s: { r: 0, c: 0 }, e: { r: 0, c: headerRow.length - 1 } });
+            
+            // Set column widths to fit content
+            const colWidths = [];
+            
+            // Set width for No. and Nama Siswa columns
+            colWidths[0] = { wch: 5 };  // No.
+            colWidths[1] = { wch: 25 }; // Nama Siswa
+            
+            // Set width for date columns
+            for (let i = 0; i < dates.length; i++) {
+                colWidths[i + 2] = { wch: 6 }; // Date columns (fit for DD/MM format)
+            }
+            
+            // Set width for total columns
+            colWidths[dates.length + 2] = { wch: 12 }; // Total Hadir
+            colWidths[dates.length + 3] = { wch: 12 }; // Total Ijin
+            colWidths[dates.length + 4] = { wch: 12 }; // Total Sakit
+            colWidths[dates.length + 5] = { wch: 12 }; // Total Alpha
+            
+            ws['!cols'] = colWidths;
             
             // Create workbook
             const wb = XLSX.utils.book_new();
@@ -1082,5 +1101,5 @@
         const day = String(today.getDate()).padStart(2, '0');
         document.getElementById('tanggal-kehadiran').value = `${year}-${month}-${day}`;
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9632caedd17106ab',t:'MTc1MzE4NTc4NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9632fccbc52e40e0',t:'MTc1MzE4NzgyNi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
