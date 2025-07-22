@@ -200,141 +200,242 @@
             color: #64748b;
             font-size: 0.875rem;
         }
+        
+        /* Login styles */
+        .login-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background-color: #f0f4f8;
+            background-image: linear-gradient(135deg, #f0f4f8 0%, #d5e3f3 100%);
+        }
+        
+        .login-card {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            width: 100%;
+            max-width: 400px;
+            padding: 2rem;
+        }
+        
+        .login-header {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .login-icon {
+            font-size: 3rem;
+            color: #4f46e5;
+            margin-bottom: 1rem;
+        }
+        
+        .login-form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .login-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #374151;
+        }
+        
+        .login-input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+            font-size: 1rem;
+            transition: border-color 0.15s ease-in-out;
+        }
+        
+        .login-input:focus {
+            outline: none;
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+        }
+        
+        .login-button {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background-color: #4f46e5;
+            color: white;
+            border: none;
+            border-radius: 0.375rem;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.15s ease-in-out;
+        }
+        
+        .login-button:hover {
+            background-color: #4338ca;
+        }
+        
+        .login-error {
+            color: #ef4444;
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+            text-align: center;
+        }
+        
+        .app-container {
+            display: none;
+        }
+        
+        /* Session timeout modal */
+        .timeout-modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+        
+        .timeout-modal-content {
+            background-color: #fefefe;
+            margin: 15vh auto;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+        }
+        
+        .timeout-icon {
+            font-size: 3rem;
+            color: #f59e0b;
+            margin-bottom: 1rem;
+        }
+        
+        .timeout-countdown {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #ef4444;
+            margin: 1rem 0;
+        }
     </style>
 </head>
 <body>
-    <div class="flex-grow">
-        <header class="bg-white shadow-md">
+    <!-- Login Screen -->
+    <div id="login-screen" class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <div class="login-icon">
+                    <i class="fas fa-user-shield"></i>
+                </div>
+                <h1 class="text-2xl font-bold text-gray-800">Login Admin Rekap Data</h1>
+                <p class="text-gray-600 mt-1">Masukkan kredensial untuk akses sistem</p>
+            </div>
+            
+            <form id="login-form">
+                <div class="login-form-group">
+                    <label for="username" class="login-label">Username</label>
+                    <input type="text" id="username" class="login-input" placeholder="Masukkan username" required>
+                </div>
+                
+                <div class="login-form-group">
+                    <label for="password" class="login-label">Password</label>
+                    <input type="password" id="password" class="login-input" placeholder="Masukkan password" required>
+                </div>
+                
+                <div id="login-error" class="login-error hidden"></div>
+                
+                <button type="submit" class="login-button">
+                    <i class="fas fa-sign-in-alt mr-2"></i> Login
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Session Timeout Modal -->
+    <div id="timeout-modal" class="timeout-modal">
+        <div class="timeout-modal-content">
+            <div class="timeout-icon">
+                <i class="fas fa-clock"></i>
+            </div>
+            <h2 class="text-xl font-semibold mb-2">Sesi Akan Berakhir</h2>
+            <p class="mb-3">Anda akan logout otomatis karena tidak ada aktivitas dalam:</p>
+            <div class="timeout-countdown" id="timeout-countdown">30</div>
+            <div class="flex justify-center space-x-4">
+                <button id="btn-stay-logged-in" class="btn-primary px-4 py-1.5 rounded-md font-medium text-sm">
+                    Tetap Login
+                </button>
+                <button id="btn-logout-now" class="btn-danger px-4 py-1.5 rounded-md font-medium text-sm">
+                    Logout Sekarang
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Application -->
+    <div id="app-container" class="app-container">
+        <div class="flex-grow">
+            <header class="bg-white shadow-md">
+                <div class="container mx-auto px-4 py-6">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h1 class="text-3xl font-bold text-gray-800">Sistem Kehadiran Siswa Kelas 8B</h1>
+                            <p class="text-gray-600 mt-1">Monitoring kehadiran siswa secara efektif</p>
+                        </div>
+                        <!-- Logout button removed as requested -->
+                    </div>
+                </div>
+            </header>
+
             <div class="container mx-auto px-4 py-6">
-                <h1 class="text-3xl font-bold text-gray-800">Sistem Kehadiran Siswa Kelas 8B</h1>
-                <p class="text-gray-600 mt-1">Monitoring kehadiran siswa secara efektif</p>
-            </div>
-        </header>
-
-        <div class="container mx-auto px-4 py-6">
-            <!-- Tab Navigation -->
-            <div class="flex border-b border-gray-200 mb-6">
-                <button class="tab-btn tab-active px-6 py-3 font-medium rounded-t-lg" data-tab="siswa">Data Siswa</button>
-                <button class="tab-btn px-6 py-3 font-medium rounded-t-lg" data-tab="kehadiran">Kehadiran</button>
-                <button class="tab-btn px-6 py-3 font-medium rounded-t-lg" data-tab="rekap">Rekap Kehadiran</button>
-            </div>
-
-            <!-- Tab Content -->
-            <div class="tab-content active" id="siswa">
-                <div class="bg-white rounded-lg shadow-md p-4 mb-6">
-                    <div class="flex justify-between items-center mb-3">
-                        <h2 class="text-lg font-semibold">Data Siswa</h2>
-                        <button id="btn-tambah-siswa" class="btn-primary px-3 py-1.5 rounded-md font-medium flex items-center text-sm">
-                            <i class="fas fa-plus mr-2"></i> Tambah Siswa
-                        </button>
-                    </div>
-                    
-                    <!-- Form Tambah Siswa (Hidden by default) -->
-                    <div id="form-container-siswa" class="hidden bg-gray-50 p-3 rounded-lg mb-4 border border-gray-200">
-                        <h3 class="text-base font-medium mb-2">Tambah Siswa Baru</h3>
-                        <form id="form-siswa" class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">NIS</label>
-                                <input type="text" id="nis" class="w-full px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Nama Siswa</label>
-                                <input type="text" id="nama" class="w-full px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Jenis Kelamin</label>
-                                <select id="jenis-kelamin" class="w-full px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
-                                    <option value="">Pilih Jenis Kelamin</option>
-                                    <option value="Laki-laki">Laki-laki</option>
-                                    <option value="Perempuan">Perempuan</option>
-                                </select>
-                            </div>
-                            <div class="md:col-span-3 flex space-x-2">
-                                <button type="submit" class="btn-primary px-4 py-1.5 rounded-md font-medium text-sm">Simpan</button>
-                                <button type="button" id="btn-batal-siswa" class="px-4 py-1.5 bg-gray-300 text-gray-700 rounded-md font-medium hover:bg-gray-400 text-sm">Batal</button>
-                            </div>
-                        </form>
-                    </div>
-
-                    <div class="table-container overflow-x-auto">
-                        <table class="min-w-full bg-white border border-gray-200 compact-table">
-                            <thead>
-                                <tr class="bg-gray-100">
-                                    <th class="border-b text-left">No</th>
-                                    <th class="border-b text-left">NIS</th>
-                                    <th class="border-b text-left">Nama Siswa</th>
-                                    <th class="border-b text-left">Jenis Kelamin</th>
-                                    <th class="border-b text-left">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody id="daftar-siswa">
-                                <!-- Data siswa akan ditampilkan di sini -->
-                            </tbody>
-                        </table>
-                    </div>
+                <!-- Tab Navigation -->
+                <div class="flex border-b border-gray-200 mb-6">
+                    <button class="tab-btn tab-active px-6 py-3 font-medium rounded-t-lg" data-tab="siswa">Data Siswa</button>
+                    <button class="tab-btn px-6 py-3 font-medium rounded-t-lg" data-tab="kehadiran">Kehadiran</button>
+                    <button class="tab-btn px-6 py-3 font-medium rounded-t-lg" data-tab="rekap">Rekap Kehadiran</button>
                 </div>
-            </div>
 
-            <div class="tab-content" id="kehadiran">
-                <div class="bg-white rounded-lg shadow-md p-4 mb-6">
-                    <h2 class="text-lg font-semibold mb-3">Input Kehadiran</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal</label>
-                            <input type="date" id="tanggal-kehadiran" class="w-full px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
-                        </div>
-                    </div>
-                    
-                    <div class="table-container overflow-x-auto mt-3">
-                        <table class="min-w-full bg-white border border-gray-200">
-                            <thead>
-                                <tr class="bg-gray-100">
-                                    <th class="py-2 px-3 border-b text-left text-sm">No</th>
-                                    <th class="py-2 px-3 border-b text-left text-sm">NIS</th>
-                                    <th class="py-2 px-3 border-b text-left text-sm">Nama Siswa</th>
-                                    <th class="py-2 px-3 border-b text-left text-sm">Status Kehadiran</th>
-                                    <th class="py-2 px-3 border-b text-left text-sm">Keterangan</th>
-                                </tr>
-                            </thead>
-                            <tbody id="daftar-kehadiran">
-                                <!-- Data kehadiran akan ditampilkan di sini -->
-                            </tbody>
-                        </table>
-                    </div>
-                    
-                    <div class="mt-4">
-                        <button id="simpan-kehadiran" class="btn-primary px-4 py-1.5 rounded-md font-medium text-sm">Simpan Kehadiran</button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="tab-content" id="rekap">
-                <div class="bg-white rounded-lg shadow-md p-4 mb-6">
-                    <h2 class="text-lg font-semibold mb-3">Rekap Kehadiran</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Awal</label>
-                            <input type="date" id="tanggal-awal" class="w-full px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Akhir</label>
-                            <input type="date" id="tanggal-akhir" class="w-full px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
-                        </div>
-                        <div class="flex items-end">
-                            <button id="generate-rekap" class="btn-primary px-4 py-1.5 rounded-md font-medium text-sm">Generate Rekap</button>
-                        </div>
-                    </div>
-                    
-                    <div id="rekap-container" class="hidden mt-4">
-                        <div class="flex space-x-2 mb-3">
-                            <button id="export-excel" class="btn-success px-4 py-1.5 rounded-md font-medium text-sm">
-                                <i class="fas fa-file-excel mr-2"></i> Export Excel
-                            </button>
-                            <button id="export-pdf-all" class="btn-danger px-4 py-1.5 rounded-md font-medium text-sm">
-                                <i class="fas fa-file-pdf mr-2"></i> Cetak PDF
+                <!-- Tab Content -->
+                <div class="tab-content active" id="siswa">
+                    <div class="bg-white rounded-lg shadow-md p-4 mb-6">
+                        <div class="flex justify-between items-center mb-3">
+                            <h2 class="text-lg font-semibold">Data Siswa</h2>
+                            <button id="btn-tambah-siswa" class="btn-primary px-3 py-1.5 rounded-md font-medium flex items-center text-sm">
+                                <i class="fas fa-plus mr-2"></i> Tambah Siswa
                             </button>
                         </div>
                         
+                        <!-- Form Tambah Siswa (Hidden by default) -->
+                        <div id="form-container-siswa" class="hidden bg-gray-50 p-3 rounded-lg mb-4 border border-gray-200">
+                            <h3 class="text-base font-medium mb-2">Tambah Siswa Baru</h3>
+                            <form id="form-siswa" class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">NIS</label>
+                                    <input type="text" id="nis" class="w-full px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Nama Siswa</label>
+                                    <input type="text" id="nama" class="w-full px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Jenis Kelamin</label>
+                                    <select id="jenis-kelamin" class="w-full px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
+                                        <option value="">Pilih Jenis Kelamin</option>
+                                        <option value="Laki-laki">Laki-laki</option>
+                                        <option value="Perempuan">Perempuan</option>
+                                    </select>
+                                </div>
+                                <div class="md:col-span-3 flex space-x-2">
+                                    <button type="submit" class="btn-primary px-4 py-1.5 rounded-md font-medium text-sm">Simpan</button>
+                                    <button type="button" id="btn-batal-siswa" class="px-4 py-1.5 bg-gray-300 text-gray-700 rounded-md font-medium hover:bg-gray-400 text-sm">Batal</button>
+                                </div>
+                            </form>
+                        </div>
+
                         <div class="table-container overflow-x-auto">
                             <table class="min-w-full bg-white border border-gray-200 compact-table">
                                 <thead>
@@ -342,26 +443,106 @@
                                         <th class="border-b text-left">No</th>
                                         <th class="border-b text-left">NIS</th>
                                         <th class="border-b text-left">Nama Siswa</th>
-                                        <th class="border-b text-center">Aksi</th>
+                                        <th class="border-b text-left">Jenis Kelamin</th>
+                                        <th class="border-b text-left">Aksi</th>
                                     </tr>
                                 </thead>
-                                <tbody id="rekap-kehadiran">
-                                    <!-- Data rekap kehadiran akan ditampilkan di sini -->
+                                <tbody id="daftar-siswa">
+                                    <!-- Data siswa akan ditampilkan di sini -->
                                 </tbody>
                             </table>
                         </div>
                     </div>
                 </div>
+
+                <div class="tab-content" id="kehadiran">
+                    <div class="bg-white rounded-lg shadow-md p-4 mb-6">
+                        <h2 class="text-lg font-semibold mb-3">Input Kehadiran</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal</label>
+                                <input type="date" id="tanggal-kehadiran" class="w-full px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
+                            </div>
+                        </div>
+                        
+                        <div class="table-container overflow-x-auto mt-3">
+                            <table class="min-w-full bg-white border border-gray-200">
+                                <thead>
+                                    <tr class="bg-gray-100">
+                                        <th class="py-2 px-3 border-b text-left text-sm">No</th>
+                                        <th class="py-2 px-3 border-b text-left text-sm">NIS</th>
+                                        <th class="py-2 px-3 border-b text-left text-sm">Nama Siswa</th>
+                                        <th class="py-2 px-3 border-b text-left text-sm">Status Kehadiran</th>
+                                        <th class="py-2 px-3 border-b text-left text-sm">Keterangan</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="daftar-kehadiran">
+                                    <!-- Data kehadiran akan ditampilkan di sini -->
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <button id="simpan-kehadiran" class="btn-primary px-4 py-1.5 rounded-md font-medium text-sm">Simpan Kehadiran</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="rekap">
+                    <div class="bg-white rounded-lg shadow-md p-4 mb-6">
+                        <h2 class="text-lg font-semibold mb-3">Rekap Kehadiran</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Awal</label>
+                                <input type="date" id="tanggal-awal" class="w-full px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Akhir</label>
+                                <input type="date" id="tanggal-akhir" class="w-full px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
+                            </div>
+                            <div class="flex items-end">
+                                <button id="generate-rekap" class="btn-primary px-4 py-1.5 rounded-md font-medium text-sm">Generate Rekap</button>
+                            </div>
+                        </div>
+                        
+                        <div id="rekap-container" class="hidden mt-4">
+                            <div class="flex space-x-2 mb-3">
+                                <button id="export-excel" class="btn-success px-4 py-1.5 rounded-md font-medium text-sm">
+                                    <i class="fas fa-file-excel mr-2"></i> Export Excel
+                                </button>
+                                <button id="export-pdf-all" class="btn-danger px-4 py-1.5 rounded-md font-medium text-sm">
+                                    <i class="fas fa-file-pdf mr-2"></i> Cetak PDF
+                                </button>
+                            </div>
+                            
+                            <div class="table-container overflow-x-auto">
+                                <table class="min-w-full bg-white border border-gray-200 compact-table">
+                                    <thead>
+                                        <tr class="bg-gray-100">
+                                            <th class="border-b text-left">No</th>
+                                            <th class="border-b text-left">NIS</th>
+                                            <th class="border-b text-left">Nama Siswa</th>
+                                            <th class="border-b text-center">Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="rekap-kehadiran">
+                                        <!-- Data rekap kehadiran akan ditampilkan di sini -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
 
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="container mx-auto px-4">
-            <p><i class="far fa-copyright mr-1"></i> 2025 Sistem Kehadiran Siswa</p>
-        </div>
-    </footer>
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="container mx-auto px-4">
+                <p><i class="far fa-copyright mr-1"></i> 2025 Sistem Kehadiran Siswa</p>
+            </div>
+        </footer>
+    </div>
 
     <!-- Modal Detail Kehadiran -->
     <div id="modal-detail" class="modal">
@@ -485,6 +666,133 @@
         let siswaToCetak = null;
         let currentTanggalAwal = '';
         let currentTanggalAkhir = '';
+        
+        // Session management variables
+        let isLoggedIn = false;
+        let sessionTimeout = 5 * 60 * 1000; // 5 minutes in milliseconds
+        let inactivityTimer;
+        let warningTimer;
+        let warningDuration = 30; // 30 seconds warning before logout
+        let warningCountdown;
+        let lastActivity = Date.now();
+        
+        // Login functionality
+        const loginForm = document.getElementById('login-form');
+        const loginScreen = document.getElementById('login-screen');
+        const appContainer = document.getElementById('app-container');
+        const loginError = document.getElementById('login-error');
+        const timeoutModal = document.getElementById('timeout-modal');
+        const timeoutCountdown = document.getElementById('timeout-countdown');
+        
+        // Check for user activity
+        const activityEvents = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'];
+        
+        activityEvents.forEach(event => {
+            document.addEventListener(event, resetInactivityTimer);
+        });
+        
+        function resetInactivityTimer() {
+            lastActivity = Date.now();
+            
+            // Clear existing timers
+            clearTimeout(inactivityTimer);
+            clearTimeout(warningTimer);
+            
+            // Hide timeout warning if it's showing
+            if (timeoutModal.style.display === 'block') {
+                hideTimeoutWarning();
+            }
+            
+            // Only set new timers if logged in
+            if (isLoggedIn) {
+                // Set timer for showing warning
+                warningTimer = setTimeout(() => {
+                    showTimeoutWarning();
+                }, sessionTimeout - (warningDuration * 1000));
+                
+                // Set timer for actual logout
+                inactivityTimer = setTimeout(() => {
+                    logout();
+                }, sessionTimeout);
+            }
+        }
+        
+        function showTimeoutWarning() {
+            timeoutModal.style.display = 'block';
+            let secondsLeft = warningDuration;
+            timeoutCountdown.textContent = secondsLeft;
+            
+            warningCountdown = setInterval(() => {
+                secondsLeft--;
+                timeoutCountdown.textContent = secondsLeft;
+                
+                if (secondsLeft <= 0) {
+                    clearInterval(warningCountdown);
+                }
+            }, 1000);
+        }
+        
+        function hideTimeoutWarning() {
+            timeoutModal.style.display = 'none';
+            clearInterval(warningCountdown);
+        }
+        
+        // Stay logged in button
+        document.getElementById('btn-stay-logged-in').addEventListener('click', function() {
+            hideTimeoutWarning();
+            resetInactivityTimer();
+        });
+        
+        // Logout now button
+        document.getElementById('btn-logout-now').addEventListener('click', function() {
+            hideTimeoutWarning();
+            logout();
+        });
+        
+        loginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            // Authentication with the new credentials
+            if (username === 'admin' && password === '1122') {
+                // Login successful
+                login();
+            } else {
+                // Login failed
+                loginError.textContent = 'Username atau password salah!';
+                loginError.classList.remove('hidden');
+            }
+        });
+        
+        function login() {
+            isLoggedIn = true;
+            showApp();
+            resetInactivityTimer();
+        }
+        
+        function logout() {
+            isLoggedIn = false;
+            clearTimeout(inactivityTimer);
+            clearTimeout(warningTimer);
+            clearInterval(warningCountdown);
+            hideTimeoutWarning();
+            showLogin();
+        }
+        
+        function showApp() {
+            loginScreen.style.display = 'none';
+            appContainer.style.display = 'block';
+            renderSiswaTable();
+        }
+        
+        function showLogin() {
+            loginScreen.style.display = 'flex';
+            appContainer.style.display = 'none';
+            loginForm.reset();
+            loginError.classList.add('hidden');
+        }
         
         // Tab functionality
         const tabBtns = document.querySelectorAll('.tab-btn');
@@ -1418,6 +1726,9 @@
         const month = String(today.getMonth() + 1).padStart(2, '0');
         const day = String(today.getDate()).padStart(2, '0');
         document.getElementById('tanggal-kehadiran').value = `${year}-${month}-${day}`;
+        
+        // Always show login screen first
+        showLogin();
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9633c8fec531fd79',t:'MTc1MzE5NjE5MC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9633fabba5f0fd1e',t:'MTc1MzE5ODIyOC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
