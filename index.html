@@ -326,9 +326,14 @@
                     </div>
                     
                     <div id="rekap-container" class="hidden mt-4">
-                        <button id="export-excel" class="btn-success px-4 py-1.5 rounded-md font-medium mb-3 text-sm">
-                            <i class="fas fa-file-excel mr-2"></i> Export Excel
-                        </button>
+                        <div class="flex space-x-2 mb-3">
+                            <button id="export-excel" class="btn-success px-4 py-1.5 rounded-md font-medium text-sm">
+                                <i class="fas fa-file-excel mr-2"></i> Export Excel
+                            </button>
+                            <button id="export-pdf-all" class="btn-danger px-4 py-1.5 rounded-md font-medium text-sm">
+                                <i class="fas fa-file-pdf mr-2"></i> Cetak PDF
+                            </button>
+                        </div>
                         
                         <div class="table-container overflow-x-auto">
                             <table class="min-w-full bg-white border border-gray-200 compact-table">
@@ -432,6 +437,38 @@
         </div>
     </div>
     
+    <!-- Modal Konfirmasi Export Excel -->
+    <div id="modal-konfirmasi-excel" class="modal">
+        <div class="modal-content max-w-md">
+            <span class="close">&times;</span>
+            <div class="text-center">
+                <i class="fas fa-file-excel text-green-500 text-5xl mb-4"></i>
+                <h2 class="text-xl font-semibold mb-2">Export Excel</h2>
+                <p class="mb-6">Apakah Anda yakin ingin mengexport data kehadiran ke Excel?</p>
+                <div class="flex justify-center space-x-4">
+                    <button id="btn-batal-excel" class="px-4 py-1.5 bg-gray-300 text-gray-700 rounded-md font-medium hover:bg-gray-400 text-sm">Batal</button>
+                    <button id="btn-konfirmasi-excel" class="btn-success px-4 py-1.5 rounded-md font-medium text-sm">Export Excel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal Konfirmasi Export PDF All -->
+    <div id="modal-konfirmasi-pdf-all" class="modal">
+        <div class="modal-content max-w-md">
+            <span class="close">&times;</span>
+            <div class="text-center">
+                <i class="fas fa-file-pdf text-red-500 text-5xl mb-4"></i>
+                <h2 class="text-xl font-semibold mb-2">Cetak PDF Rekap</h2>
+                <p class="mb-6">Apakah Anda yakin ingin mencetak rekap kehadiran semua siswa?</p>
+                <div class="flex justify-center space-x-4">
+                    <button id="btn-batal-pdf-all" class="px-4 py-1.5 bg-gray-300 text-gray-700 rounded-md font-medium hover:bg-gray-400 text-sm">Batal</button>
+                    <button id="btn-konfirmasi-pdf-all" class="btn-danger px-4 py-1.5 rounded-md font-medium text-sm">Cetak PDF</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <!-- Print Container (Hidden by default) -->
     <div id="print-container">
         <!-- Content will be dynamically generated -->
@@ -446,6 +483,8 @@
         let dataKehadiran = JSON.parse(localStorage.getItem('dataKehadiran')) || [];
         let siswaToDelete = null;
         let siswaToCetak = null;
+        let currentTanggalAwal = '';
+        let currentTanggalAkhir = '';
         
         // Tab functionality
         const tabBtns = document.querySelectorAll('.tab-btn');
@@ -713,6 +752,9 @@
                 return;
             }
             
+            currentTanggalAwal = tanggalAwal;
+            currentTanggalAkhir = tanggalAkhir;
+            
             renderRekapKehadiran(tanggalAwal, tanggalAkhir);
             document.getElementById('rekap-container').classList.remove('hidden');
         });
@@ -850,6 +892,12 @@
             // Sort dates in ascending order
             dates.sort((a, b) => a - b);
             
+            // Calculate totals
+            let totalHadir = 0;
+            let totalIjin = 0;
+            let totalSakit = 0;
+            let totalAlpha = 0;
+            
             // Prepare data for PDF
             const tableData = [];
             
@@ -860,21 +908,63 @@
                 );
                 
                 if (kehadiran) {
+                    // Count attendance types
+                    if (kehadiran.status === 'H') totalHadir++;
+                    else if (kehadiran.status === 'I') totalIjin++;
+                    else if (kehadiran.status === 'S') totalSakit++;
+                    else if (kehadiran.status === 'A') totalAlpha++;
+                    
                     tableData.push([
                         index + 1,
                         formatDateMonthYear(formattedDate),
-                        getStatusText(kehadiran.status),
+                        kehadiran.status,
                         kehadiran.keterangan || '-'
                     ]);
                 } else {
                     tableData.push([
                         index + 1,
                         formatDateMonthYear(formattedDate),
-                        'Tidak ada data',
+                        '-',
                         '-'
                     ]);
                 }
             });
+            
+            // Add total row
+            tableData.push([
+                '',
+                'TOTAL',
+                '',
+                ''
+            ]);
+            
+            tableData.push([
+                '',
+                'Hadir (H)',
+                totalHadir,
+                ''
+            ]);
+            
+            tableData.push([
+                '',
+                'Ijin (I)',
+                totalIjin,
+                ''
+            ]);
+            
+            tableData.push([
+                '',
+                'Sakit (S)',
+                totalSakit,
+                ''
+            ]);
+            
+            tableData.push([
+                '',
+                'Alpha (A)',
+                totalAlpha,
+                ''
+            ]);
             
             // Create PDF
             const doc = new jsPDF();
@@ -889,11 +979,12 @@
             doc.setFont('helvetica', 'normal');
             doc.text(`NIS: ${siswa.nis}`, 14, 30);
             doc.text(`Nama: ${siswa.nama}`, 14, 38);
+            doc.text(`Periode: ${formatDateDisplay(tanggalAwal)} - ${formatDateDisplay(tanggalAkhir)}`, 14, 46);
             
             // Add table
             doc.autoTable({
-                startY: 45,
-                head: [['No.', 'Tanggal', 'Status Kehadiran', 'Keterangan']],
+                startY: 55,
+                head: [['No.', 'Tanggal', 'Status', 'Keterangan']],
                 body: tableData,
                 theme: 'grid',
                 headStyles: {
@@ -908,7 +999,7 @@
                 columnStyles: {
                     0: { cellWidth: 15 },
                     1: { cellWidth: 50 },
-                    2: { cellWidth: 40 },
+                    2: { cellWidth: 20 },
                     3: { cellWidth: 'auto' }
                 }
             });
@@ -917,17 +1008,124 @@
             doc.save(`Rekap_Kehadiran_${siswa.nama}.pdf`);
         }
         
+        // Cetak PDF All Students
+        function cetakPDFAll(tanggalAwal, tanggalAkhir) {
+            // Get all dates between tanggalAwal and tanggalAkhir
+            const dates = getDatesInRange(new Date(tanggalAwal), new Date(tanggalAkhir));
+            
+            // Sort dates in ascending order
+            dates.sort((a, b) => a - b);
+            
+            // Create PDF
+            const doc = new jsPDF();
+            
+            // Add title
+            doc.setFontSize(16);
+            doc.setFont('helvetica', 'bold');
+            doc.text('REKAP KEHADIRAN SISWA KELAS 8B', doc.internal.pageSize.getWidth() / 2, 20, { align: 'center' });
+            
+            // Add period info
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'normal');
+            doc.text(`Periode: ${formatDateDisplay(tanggalAwal)} - ${formatDateDisplay(tanggalAkhir)}`, doc.internal.pageSize.getWidth() / 2, 30, { align: 'center' });
+            
+            // Create header row with dates
+            const headerRow = ['No.', 'Nama Siswa'];
+            
+            // Add date columns
+            dates.forEach(date => {
+                headerRow.push(formatDateShort(formatDate(date)));
+            });
+            
+            // Add total columns
+            headerRow.push('H');
+            headerRow.push('I');
+            headerRow.push('S');
+            headerRow.push('A');
+            
+            // Create data rows
+            const dataRows = [];
+            
+            dataSiswa.forEach((siswa, index) => {
+                const row = [index + 1, siswa.nama];
+                
+                // Track totals for this student
+                let totalHadir = 0;
+                let totalIjin = 0;
+                let totalSakit = 0;
+                let totalAlpha = 0;
+                
+                dates.forEach(date => {
+                    const formattedDate = formatDate(date);
+                    const kehadiran = dataKehadiran.find(k => 
+                        k.nis === siswa.nis && k.tanggal === formattedDate
+                    );
+                    
+                    if (kehadiran) {
+                        row.push(kehadiran.status);
+                        
+                        // Count attendance types
+                        if (kehadiran.status === 'H') totalHadir++;
+                        else if (kehadiran.status === 'I') totalIjin++;
+                        else if (kehadiran.status === 'S') totalSakit++;
+                        else if (kehadiran.status === 'A') totalAlpha++;
+                    } else {
+                        row.push('-');
+                    }
+                });
+                
+                // Add totals to the row
+                row.push(totalHadir);
+                row.push(totalIjin);
+                row.push(totalSakit);
+                row.push(totalAlpha);
+                
+                dataRows.push(row);
+            });
+            
+            // Add table
+            doc.autoTable({
+                startY: 40,
+                head: [headerRow],
+                body: dataRows,
+                theme: 'grid',
+                headStyles: {
+                    fillColor: [79, 70, 229],
+                    textColor: 255,
+                    fontStyle: 'bold'
+                },
+                styles: {
+                    fontSize: 8,
+                    cellPadding: 2
+                },
+                columnStyles: {
+                    0: { cellWidth: 10 }, // No.
+                    1: { cellWidth: 40 }  // Nama Siswa
+                },
+                didDrawPage: function(data) {
+                    // Add legend at the bottom of the page
+                    const pageHeight = doc.internal.pageSize.height;
+                    doc.setFontSize(10);
+                    doc.text('Keterangan:', 14, pageHeight - 30);
+                    doc.text('H = Hadir', 14, pageHeight - 25);
+                    doc.text('I = Ijin', 14, pageHeight - 20);
+                    doc.text('S = Sakit', 14, pageHeight - 15);
+                    doc.text('A = Alpha', 14, pageHeight - 10);
+                }
+            });
+            
+            // Save PDF
+            doc.save(`Rekap_Kehadiran_Semua_Siswa_${tanggalAwal}_${tanggalAkhir}.pdf`);
+        }
+        
         // Export to Excel
         document.getElementById('export-excel').addEventListener('click', function() {
-            const tanggalAwal = document.getElementById('tanggal-awal').value;
-            const tanggalAkhir = document.getElementById('tanggal-akhir').value;
-            
-            if (!tanggalAwal || !tanggalAkhir) {
-                alert('Pilih tanggal awal dan tanggal akhir terlebih dahulu!');
-                return;
-            }
-            
-            exportToExcel(tanggalAwal, tanggalAkhir);
+            document.getElementById('modal-konfirmasi-excel').style.display = 'block';
+        });
+        
+        // Export PDF All
+        document.getElementById('export-pdf-all').addEventListener('click', function() {
+            document.getElementById('modal-konfirmasi-pdf-all').style.display = 'block';
         });
         
         function exportToExcel(tanggalAwal, tanggalAkhir) {
@@ -1131,6 +1329,8 @@
         const modalDetail = document.getElementById('modal-detail');
         const modalKonfirmasi = document.getElementById('modal-konfirmasi');
         const modalKonfirmasiCetak = document.getElementById('modal-konfirmasi-cetak');
+        const modalKonfirmasiExcel = document.getElementById('modal-konfirmasi-excel');
+        const modalKonfirmasiPDFAll = document.getElementById('modal-konfirmasi-pdf-all');
         const closeButtons = document.querySelectorAll('.close');
         
         closeButtons.forEach(button => {
@@ -1138,6 +1338,8 @@
                 modalDetail.style.display = 'none';
                 modalKonfirmasi.style.display = 'none';
                 modalKonfirmasiCetak.style.display = 'none';
+                modalKonfirmasiExcel.style.display = 'none';
+                modalKonfirmasiPDFAll.style.display = 'none';
             });
         });
         
@@ -1150,6 +1352,12 @@
             }
             if (event.target === modalKonfirmasiCetak) {
                 modalKonfirmasiCetak.style.display = 'none';
+            }
+            if (event.target === modalKonfirmasiExcel) {
+                modalKonfirmasiExcel.style.display = 'none';
+            }
+            if (event.target === modalKonfirmasiPDFAll) {
+                modalKonfirmasiPDFAll.style.display = 'none';
             }
         });
         
@@ -1181,6 +1389,26 @@
             }
         });
         
+        // Excel confirmation buttons
+        document.getElementById('btn-batal-excel').addEventListener('click', function() {
+            modalKonfirmasiExcel.style.display = 'none';
+        });
+        
+        document.getElementById('btn-konfirmasi-excel').addEventListener('click', function() {
+            exportToExcel(currentTanggalAwal, currentTanggalAkhir);
+            modalKonfirmasiExcel.style.display = 'none';
+        });
+        
+        // PDF All confirmation buttons
+        document.getElementById('btn-batal-pdf-all').addEventListener('click', function() {
+            modalKonfirmasiPDFAll.style.display = 'none';
+        });
+        
+        document.getElementById('btn-konfirmasi-pdf-all').addEventListener('click', function() {
+            cetakPDFAll(currentTanggalAwal, currentTanggalAkhir);
+            modalKonfirmasiPDFAll.style.display = 'none';
+        });
+        
         // Initialize tables
         renderSiswaTable();
         
@@ -1191,5 +1419,5 @@
         const day = String(today.getDate()).padStart(2, '0');
         document.getElementById('tanggal-kehadiran').value = `${year}-${month}-${day}`;
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9633b2e795c5ce6d',t:'MTc1MzE5NTI4Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9633c8fec531fd79',t:'MTc1MzE5NjE5MC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
