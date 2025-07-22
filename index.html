@@ -1,167 +1,46 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Data Kehadiran Kelas 8B</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
-  <style>
-    body { font-family: Arial, sans-serif; padding: 20px; }
-    nav { margin-bottom: 20px; }
-    nav button { margin-right: 10px; padding: 10px 20px; }
-    .tab { display: none; }
-    .tab.active { display: block; }
-    table { width: 100%; border-collapse: collapse; margin-top: 10px; overflow-x: auto; }
-    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
-    .actions button { margin: 0 2px; }
-    @media(max-width: 600px) {
-      table, thead, tbody, th, td, tr { display: block; }
-      thead { display: none; }
-      td { padding: 10px; border: none; border-bottom: 1px solid #eee; }
-    }
-  </style>
-</head>
-<body>
-  <h1>Data Kehadiran Siswa Kelas 8B</h1>
-  <nav>
-    <button onclick="showTab('siswa')">Siswa</button>
-    <button onclick="showTab('kehadiran')">Kehadiran</button>
-    <button onclick="showTab('rekap')">Rekap Kehadiran</button>
-  </nav>
+<!-- Tambahkan ini di akhir tab rekap untuk Statistik -->
+<div id="statistik" class="tab">
+  <h2><i class="fas fa-chart-pie"></i> Statistik Kehadiran</h2>
+  <canvas id="chartKehadiran" width="400" height="200"></canvas>
+</div>
 
-  <div id="siswa" class="tab active">
-    <h2>Data Siswa</h2>
-    <form id="formSiswa">
-      <input type="text" id="nis" placeholder="NIS" required>
-      <input type="text" id="nama" placeholder="Nama Siswa" required>
-      <select id="jk">
-        <option value="L">Laki-laki</option>
-        <option value="P">Perempuan</option>
-      </select>
-      <button type="submit">Tambah Siswa</button>
-    </form>
-    <table id="tabelSiswa">
-      <thead><tr><th>No</th><th>NIS</th><th>Nama</th><th>JK</th><th>Aksi</th></tr></thead>
-      <tbody></tbody>
-    </table>
-  </div>
-
-  <div id="kehadiran" class="tab">
-    <h2>Input Kehadiran</h2>
-    <table id="formKehadiran">
-      <thead><tr><th>No</th><th>NIS</th><th>Nama</th><th>Kehadiran</th><th>Keterangan</th></tr></thead>
-      <tbody></tbody>
-    </table>
-    <button onclick="simpanKehadiran()">Simpan Kehadiran</button>
-  </div>
-
-  <div id="rekap" class="tab">
-    <h2>Rekap Kehadiran</h2>
-    <label>Tanggal Awal: <input type="date" id="tanggalAwal"></label>
-    <label>Tanggal Akhir: <input type="date" id="tanggalAkhir"></label>
-    <button onclick="generateRekap()">Generate Rekap</button>
-    <button onclick="exportExcel()">Export Excel</button>
-    <button onclick="window.print()">Cetak PDF</button>
-    <div id="tabelRekap"></div>
-  </div>
-
-  <script>
-    // Firebase setup
-    const firebaseConfig = {
-      apiKey: "AIzaSyA3ENcWsQfT6RG1YRj0jfzMg4pQE2GoJj0",
-      authDomain: "kehadiran8b.firebaseapp.com",
-      projectId: "kehadiran8b",
-      storageBucket: "kehadiran8b.firebasestorage.app",
-      messagingSenderId: "169447081278",
-      appId: "1:169447081278:web:2a2fad2157b47e8715186f",
-      measurementId: "G-E22Z1YSL4W"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-
-    let siswa = [];
-    let kehadiran = {};
-
-    firebase.database().ref('siswa').on('value', snapshot => {
-      siswa = snapshot.val() ? Object.values(snapshot.val()) : [];
-      renderSiswa();
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+function tampilkanStatistik(dataRekap) {
+  const labels = ['Hadir', 'Izin', 'Sakit', 'Alpha'];
+  let total = { H: 0, I: 0, S: 0, A: 0 };
+  dataRekap.forEach(siswa => {
+    siswa.kehadiran.forEach(k => {
+      if (k.status === 'H') total.H++;
+      else if (k.status === 'I') total.I++;
+      else if (k.status === 'S') total.S++;
+      else if (k.status === 'A') total.A++;
     });
-
-    firebase.database().ref('kehadiran').on('value', snapshot => {
-      kehadiran = snapshot.val() || {};
-    });
-
-    function showTab(id) {
-      document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-      document.getElementById(id).classList.add('active');
-      if (id === 'kehadiran') loadKehadiranForm();
+  });
+  const data = {
+    labels: labels,
+    datasets: [{
+      label: 'Total Kehadiran',
+      data: [total.H, total.I, total.S, total.A],
+      backgroundColor: ['#2ecc71', '#f1c40f', '#3498db', '#e74c3c']
+    }]
+  };
+  const config = {
+    type: 'bar',
+    data: data,
+    options: {
+      responsive: true,
+      plugins: {
+        legend: {
+          display: false
+        },
+        title: {
+          display: true,
+          text: 'Grafik Statistik Kehadiran'
+        }
+      }
     }
-
-    document.getElementById('formSiswa').addEventListener('submit', e => {
-      e.preventDefault();
-      const nis = document.getElementById('nis').value;
-      const nama = document.getElementById('nama').value;
-      const jk = document.getElementById('jk').value;
-      const newSiswa = { nis, nama, jk };
-      firebase.database().ref('siswa/' + nis).set(newSiswa);
-      document.getElementById('formSiswa').reset();
-    });
-
-    function renderSiswa() {
-      const tbody = document.querySelector('#tabelSiswa tbody');
-      tbody.innerHTML = '';
-      siswa.forEach((s, i) => {
-        tbody.innerHTML += `
-          <tr>
-            <td>${i + 1}</td>
-            <td>${s.nis}</td>
-            <td>${s.nama}</td>
-            <td>${s.jk}</td>
-            <td class="actions">
-              <button onclick="hapusSiswa('${s.nis}')">Hapus</button>
-            </td>
-          </tr>`;
-      });
-    }
-
-    function hapusSiswa(nis) {
-      firebase.database().ref('siswa/' + nis).remove();
-    }
-
-    function loadKehadiranForm() {
-      const tbody = document.querySelector('#formKehadiran tbody');
-      tbody.innerHTML = '';
-      siswa.forEach((s, i) => {
-        tbody.innerHTML += `
-          <tr>
-            <td>${i + 1}</td>
-            <td>${s.nis}</td>
-            <td>${s.nama}</td>
-            <td>
-              <select id="status-${s.nis}">
-                <option value="H">Hadir</option>
-                <option value="I">Ijin</option>
-                <option value="S">Sakit</option>
-                <option value="A">Alpha</option>
-              </select>
-            </td>
-            <td><input type="text" id="ket-${s.nis}" placeholder="Keterangan"></td>
-          </tr>`;
-      });
-    }
-
-    function simpanKehadiran() {
-      const tanggal = new Date().toISOString().split('T')[0];
-      siswa.forEach(s => {
-        const status = document.getElementById(`status-${s.nis}`).value;
-        const keterangan = document.getElementById(`ket-${s.nis}`).value;
-        firebase.database().ref(`kehadiran/${s.nis}/${tanggal}`).set({ status, keterangan });
-      });
-      alert('Kehadiran disimpan ke server.');
-    }
-  </script>
-</body>
-</html>
+  };
+  new Chart(document.getElementById('chartKehadiran'), config);
+}
+</script>
