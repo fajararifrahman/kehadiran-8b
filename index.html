@@ -16,6 +16,9 @@
         body {
             font-family: 'Poppins', sans-serif;
             background-color: #f0f4f8;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
         }
         .tab-active {
             background-color: #4f46e5;
@@ -186,10 +189,21 @@
             padding: 0.25rem 0.5rem;
             font-size: 0.75rem;
         }
+        
+        /* Footer styles */
+        .footer {
+            margin-top: auto;
+            padding: 1rem;
+            background-color: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+            text-align: left;
+            color: #64748b;
+            font-size: 0.875rem;
+        }
     </style>
 </head>
 <body>
-    <div class="min-h-screen bg-gradient-to-b from-indigo-50 to-white">
+    <div class="flex-grow">
         <header class="bg-white shadow-md">
             <div class="container mx-auto px-4 py-6">
                 <h1 class="text-3xl font-bold text-gray-800">Sistem Kehadiran Siswa Kelas 8B</h1>
@@ -337,6 +351,13 @@
         </div>
     </div>
 
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container mx-auto px-4">
+            <p><i class="far fa-copyright mr-1"></i> 2025 Sistem Kehadiran Siswa</p>
+        </div>
+    </footer>
+
     <!-- Modal Detail Kehadiran -->
     <div id="modal-detail" class="modal">
         <div class="modal-content">
@@ -395,6 +416,22 @@
         </div>
     </div>
     
+    <!-- Modal Konfirmasi Cetak -->
+    <div id="modal-konfirmasi-cetak" class="modal">
+        <div class="modal-content max-w-md">
+            <span class="close">&times;</span>
+            <div class="text-center">
+                <i class="fas fa-file-pdf text-blue-500 text-5xl mb-4"></i>
+                <h2 class="text-xl font-semibold mb-2">Cetak Rekap Kehadiran</h2>
+                <p class="mb-6" id="konfirmasi-cetak-text">Apakah Anda yakin ingin mencetak rekap kehadiran siswa ini?</p>
+                <div class="flex justify-center space-x-4">
+                    <button id="btn-batal-cetak" class="px-4 py-1.5 bg-gray-300 text-gray-700 rounded-md font-medium hover:bg-gray-400 text-sm">Batal</button>
+                    <button id="btn-konfirmasi-cetak" class="btn-primary px-4 py-1.5 rounded-md font-medium text-sm">Cetak PDF</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <!-- Print Container (Hidden by default) -->
     <div id="print-container">
         <!-- Content will be dynamically generated -->
@@ -408,6 +445,7 @@
         let dataSiswa = JSON.parse(localStorage.getItem('dataSiswa')) || [];
         let dataKehadiran = JSON.parse(localStorage.getItem('dataKehadiran')) || [];
         let siswaToDelete = null;
+        let siswaToCetak = null;
         
         // Tab functionality
         const tabBtns = document.querySelectorAll('.tab-btn');
@@ -507,6 +545,18 @@
             siswaToDelete = nis;
             document.getElementById('konfirmasi-text').textContent = `Apakah Anda yakin ingin menghapus siswa "${nama}" (${nis})?`;
             document.getElementById('modal-konfirmasi').style.display = 'block';
+        }
+        
+        // Show Print Confirmation
+        function showPrintConfirmation(nis, nama, tanggalAwal, tanggalAkhir) {
+            siswaToCetak = {
+                nis,
+                nama,
+                tanggalAwal,
+                tanggalAkhir
+            };
+            document.getElementById('konfirmasi-cetak-text').textContent = `Apakah Anda yakin ingin mencetak rekap kehadiran untuk siswa "${nama}"?`;
+            document.getElementById('modal-konfirmasi-cetak').style.display = 'block';
         }
         
         // Hapus Siswa
@@ -726,7 +776,7 @@
                                 <i class="fas fa-info-circle"></i> Detail
                             </button>
                             <button class="btn-warning compact-btn rounded-md" 
-                                    onclick="cetakKehadiran('${siswa.nis}', '${siswa.nama}', '${tanggalAwal}', '${tanggalAkhir}')">
+                                    onclick="showPrintConfirmation('${siswa.nis}', '${siswa.nama}', '${tanggalAwal}', '${tanggalAkhir}')">
                                 <i class="fas fa-print"></i> Cetak
                             </button>
                         </div>
@@ -1080,12 +1130,14 @@
         // Modal functionality
         const modalDetail = document.getElementById('modal-detail');
         const modalKonfirmasi = document.getElementById('modal-konfirmasi');
+        const modalKonfirmasiCetak = document.getElementById('modal-konfirmasi-cetak');
         const closeButtons = document.querySelectorAll('.close');
         
         closeButtons.forEach(button => {
             button.addEventListener('click', function() {
                 modalDetail.style.display = 'none';
                 modalKonfirmasi.style.display = 'none';
+                modalKonfirmasiCetak.style.display = 'none';
             });
         });
         
@@ -1095,6 +1147,9 @@
             }
             if (event.target === modalKonfirmasi) {
                 modalKonfirmasi.style.display = 'none';
+            }
+            if (event.target === modalKonfirmasiCetak) {
+                modalKonfirmasiCetak.style.display = 'none';
             }
         });
         
@@ -1112,6 +1167,20 @@
             }
         });
         
+        // Print confirmation buttons
+        document.getElementById('btn-batal-cetak').addEventListener('click', function() {
+            modalKonfirmasiCetak.style.display = 'none';
+            siswaToCetak = null;
+        });
+        
+        document.getElementById('btn-konfirmasi-cetak').addEventListener('click', function() {
+            if (siswaToCetak) {
+                cetakKehadiran(siswaToCetak.nis, siswaToCetak.nama, siswaToCetak.tanggalAwal, siswaToCetak.tanggalAkhir);
+                modalKonfirmasiCetak.style.display = 'none';
+                siswaToCetak = null;
+            }
+        });
+        
         // Initialize tables
         renderSiswaTable();
         
@@ -1122,5 +1191,5 @@
         const day = String(today.getDate()).padStart(2, '0');
         document.getElementById('tanggal-kehadiran').value = `${year}-${month}-${day}`;
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96337d9932014493',t:'MTc1MzE5MzEwMi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9633b2e795c5ce6d',t:'MTc1MzE5NTI4Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
