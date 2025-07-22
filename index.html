@@ -823,8 +823,7 @@
             const printContainer = document.getElementById('print-container');
             printContainer.innerHTML = `
                 <div style="padding: 20px; font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto;">
-                    <h1 style="text-align: center; margin-bottom: 10px; font-weight: bold; font-size: 18px;">REKAP KEHADIRAN SISWA KELAS 8B</h1>
-                    <p style="text-align: center; margin-bottom: 20px;">Periode: ${formatDateMonthYear(tanggalAwal)} - ${formatDateMonthYear(tanggalAkhir)}</p>
+                    <h1 style="text-align: center; margin-bottom: 20px; font-weight: bold; font-size: 18px;">REKAP KEHADIRAN SISWA KELAS 8B</h1>
                     
                     <div style="margin-bottom: 20px;">
                         <p><strong>NIS:</strong> ${siswa.nis}</p>
@@ -844,28 +843,6 @@
                             ${tableRows.join('')}
                         </tbody>
                     </table>
-                    
-                    <div style="margin-top: 20px;">
-                        <h3>Ringkasan Kehadiran:</h3>
-                        <div style="display: flex; flex-wrap: wrap; gap: 20px; margin-top: 10px;">
-                            <div style="padding: 10px; background-color: #e8f5e9; border-radius: 5px; min-width: 120px;">
-                                <p style="margin: 0; font-size: 14px;">Total Hadir:</p>
-                                <p style="margin: 0; font-weight: bold; color: #2e7d32;">${totalHadir}</p>
-                            </div>
-                            <div style="padding: 10px; background-color: #fff8e1; border-radius: 5px; min-width: 120px;">
-                                <p style="margin: 0; font-size: 14px;">Total Ijin:</p>
-                                <p style="margin: 0; font-weight: bold; color: #f57f17;">${totalIjin}</p>
-                            </div>
-                            <div style="padding: 10px; background-color: #e3f2fd; border-radius: 5px; min-width: 120px;">
-                                <p style="margin: 0; font-size: 14px;">Total Sakit:</p>
-                                <p style="margin: 0; font-weight: bold; color: #1565c0;">${totalSakit}</p>
-                            </div>
-                            <div style="padding: 10px; background-color: #ffebee; border-radius: 5px; min-width: 120px;">
-                                <p style="margin: 0; font-size: 14px;">Total Alpha:</p>
-                                <p style="margin: 0; font-weight: bold; color: #c62828;">${totalAlpha}</p>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             `;
             
@@ -1136,5 +1113,5 @@
         const day = String(today.getDate()).padStart(2, '0');
         document.getElementById('tanggal-kehadiran').value = `${year}-${month}-${day}`;
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96330b5bf5f332c1',t:'MTc1MzE4ODQyMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'963319f1f496fdce',t:'MTc1MzE4OTAyMC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
