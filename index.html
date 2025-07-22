@@ -8,8 +8,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body {
@@ -113,6 +111,32 @@
         .status-icon {
             font-size: 24px;
             margin-bottom: 4px;
+        }
+        
+        /* Print styles */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #print-container, #print-container * {
+                visibility: visible;
+            }
+            #print-container {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+            }
+            .no-print {
+                display: none !important;
+            }
+        }
+        
+        #print-container {
+            display: none;
+            background-color: white;
+            padding: 20px;
+            font-family: 'Poppins', sans-serif;
         }
     </style>
 </head>
@@ -322,11 +346,13 @@
             </div>
         </div>
     </div>
+    
+    <!-- Print Container (Hidden by default) -->
+    <div id="print-container">
+        <!-- Content will be dynamically generated -->
+    </div>
 
     <script>
-        // Initialize jsPDF
-        window.jsPDF = window.jspdf.jsPDF;
-        
         // Data storage
         let dataSiswa = JSON.parse(localStorage.getItem('dataSiswa')) || [];
         let dataKehadiran = JSON.parse(localStorage.getItem('dataKehadiran')) || [];
@@ -711,7 +737,7 @@
             document.getElementById('modal-detail').style.display = 'block';
         }
         
-        // Cetak Kehadiran (Generate PDF)
+        // Cetak Kehadiran (Print)
         function cetakKehadiran(nis, namaSiswa, tanggalAwal, tanggalAkhir) {
             // Get student data
             const siswa = dataSiswa.find(s => s.nis === nis);
@@ -729,8 +755,8 @@
             let totalSakit = 0;
             let totalAlpha = 0;
             
-            // Prepare data for PDF
-            const tableData = [];
+            // Prepare data for print
+            const tableRows = [];
             
             dates.forEach((date, index) => {
                 const formattedDate = formatDate(date);
@@ -744,58 +770,81 @@
                     else if (kehadiran.status === 'S') totalSakit++;
                     else if (kehadiran.status === 'A') totalAlpha++;
                     
-                    tableData.push([
-                        index + 1,
-                        formatDateMonthYear(formattedDate),
-                        getStatusText(kehadiran.status),
-                        kehadiran.keterangan || '-'
-                    ]);
+                    tableRows.push(`
+                        <tr>
+                            <td style="border: 1px solid #ddd; padding: 8px;">${index + 1}</td>
+                            <td style="border: 1px solid #ddd; padding: 8px;">${formatDateMonthYear(formattedDate)}</td>
+                            <td style="border: 1px solid #ddd; padding: 8px;">${getStatusText(kehadiran.status)}</td>
+                            <td style="border: 1px solid #ddd; padding: 8px;">${kehadiran.keterangan || '-'}</td>
+                        </tr>
+                    `);
                 } else {
-                    tableData.push([
-                        index + 1,
-                        formatDateMonthYear(formattedDate),
-                        'Tidak ada data',
-                        '-'
-                    ]);
+                    tableRows.push(`
+                        <tr>
+                            <td style="border: 1px solid #ddd; padding: 8px;">${index + 1}</td>
+                            <td style="border: 1px solid #ddd; padding: 8px;">${formatDateMonthYear(formattedDate)}</td>
+                            <td style="border: 1px solid #ddd; padding: 8px;">Tidak ada data</td>
+                            <td style="border: 1px solid #ddd; padding: 8px;">-</td>
+                        </tr>
+                    `);
                 }
             });
             
-            // Create PDF
-            const doc = new jsPDF();
+            // Create print content
+            const printContainer = document.getElementById('print-container');
+            printContainer.innerHTML = `
+                <div style="padding: 20px; font-family: Arial, sans-serif;">
+                    <h1 style="text-align: center; margin-bottom: 10px;">Laporan Kehadiran Siswa</h1>
+                    <p style="text-align: center; margin-bottom: 20px;">Periode: ${formatDateMonthYear(tanggalAwal)} - ${formatDateMonthYear(tanggalAkhir)}</p>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <p><strong>NIS:</strong> ${siswa.nis}</p>
+                        <p><strong>Nama Siswa:</strong> ${siswa.nama}</p>
+                        <p><strong>Jenis Kelamin:</strong> ${siswa.jenisKelamin}</p>
+                    </div>
+                    
+                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                        <thead>
+                            <tr style="background-color: #f2f2f2;">
+                                <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">No</th>
+                                <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Tanggal</th>
+                                <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Status Kehadiran</th>
+                                <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Keterangan</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${tableRows.join('')}
+                        </tbody>
+                    </table>
+                    
+                    <div style="margin-top: 20px;">
+                        <h3>Ringkasan Kehadiran:</h3>
+                        <div style="display: flex; flex-wrap: wrap; gap: 20px; margin-top: 10px;">
+                            <div style="padding: 10px; background-color: #e8f5e9; border-radius: 5px; min-width: 120px;">
+                                <p style="margin: 0; font-size: 14px;">Total Hadir:</p>
+                                <p style="margin: 0; font-weight: bold; color: #2e7d32;">${totalHadir}</p>
+                            </div>
+                            <div style="padding: 10px; background-color: #fff8e1; border-radius: 5px; min-width: 120px;">
+                                <p style="margin: 0; font-size: 14px;">Total Ijin:</p>
+                                <p style="margin: 0; font-weight: bold; color: #f57f17;">${totalIjin}</p>
+                            </div>
+                            <div style="padding: 10px; background-color: #e3f2fd; border-radius: 5px; min-width: 120px;">
+                                <p style="margin: 0; font-size: 14px;">Total Sakit:</p>
+                                <p style="margin: 0; font-weight: bold; color: #1565c0;">${totalSakit}</p>
+                            </div>
+                            <div style="padding: 10px; background-color: #ffebee; border-radius: 5px; min-width: 120px;">
+                                <p style="margin: 0; font-size: 14px;">Total Alpha:</p>
+                                <p style="margin: 0; font-weight: bold; color: #c62828;">${totalAlpha}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
             
-            // Add title
-            doc.setFontSize(16);
-            doc.text('Laporan Kehadiran Siswa', 105, 15, { align: 'center' });
-            
-            // Add period
-            doc.setFontSize(12);
-            doc.text(`Periode: ${formatDateMonthYear(tanggalAwal)} - ${formatDateMonthYear(tanggalAkhir)}`, 105, 22, { align: 'center' });
-            
-            // Add student info
-            doc.setFontSize(12);
-            doc.text(`NIS: ${siswa.nis}`, 14, 35);
-            doc.text(`Nama Siswa: ${siswa.nama}`, 14, 42);
-            
-            // Add attendance table
-            doc.autoTable({
-                startY: 50,
-                head: [['No', 'Tanggal', 'Status Kehadiran', 'Keterangan']],
-                body: tableData,
-                theme: 'grid',
-                headStyles: { fillColor: [79, 70, 229] },
-                styles: { fontSize: 10 }
-            });
-            
-            // Add summary
-            const finalY = doc.lastAutoTable.finalY + 10;
-            doc.text('Ringkasan Kehadiran:', 14, finalY);
-            doc.text(`Hadir: ${totalHadir}`, 14, finalY + 7);
-            doc.text(`Ijin: ${totalIjin}`, 14, finalY + 14);
-            doc.text(`Sakit: ${totalSakit}`, 14, finalY + 21);
-            doc.text(`Alpha: ${totalAlpha}`, 14, finalY + 28);
-            
-            // Save PDF
-            doc.save(`Kehadiran_${siswa.nama}_${tanggalAwal}_${tanggalAkhir}.pdf`);
+            // Show print dialog
+            printContainer.style.display = 'block';
+            window.print();
+            printContainer.style.display = 'none';
         }
         
         // Export to Excel
@@ -818,10 +867,13 @@
             // Sort dates in ascending order
             dates.sort((a, b) => a - b);
             
+            // Create title row
+            const titleRow = ['REKAP KEHADIRAN SISWA KELAS 8B'];
+            
             // Create header row with dates
-            const headerRow = ['No', 'Nama Siswa'];
+            const headerRow = ['No.', 'Nama Siswa'];
             dates.forEach(date => {
-                headerRow.push(formatDateMonthYear(formatDate(date)));
+                headerRow.push(formatDateShort(formatDate(date)));
             });
             
             // Add total columns
@@ -873,12 +925,21 @@
             dataRows.push([]);
             dataRows.push(['Keterangan:']);
             dataRows.push(['H', 'Hadir']);
-            dataRows.push(['S', 'Sakit']);
             dataRows.push(['I', 'Ijin']);
+            dataRows.push(['S', 'Sakit']);
             dataRows.push(['A', 'Alpha']);
             
             // Create worksheet
-            const ws = XLSX.utils.aoa_to_sheet([headerRow, ...dataRows]);
+            const ws = XLSX.utils.aoa_to_sheet([
+                titleRow,
+                [],
+                headerRow,
+                ...dataRows
+            ]);
+            
+            // Style the title (merge cells)
+            if (!ws['!merges']) ws['!merges'] = [];
+            ws['!merges'].push({ s: { r: 0, c: 0 }, e: { r: 0, c: headerRow.length - 1 } });
             
             // Create workbook
             const wb = XLSX.utils.book_new();
@@ -915,6 +976,13 @@
             const month = String(date.getMonth() + 1).padStart(2, '0');
             const year = date.getFullYear();
             return `${day}/${month}/${year}`;
+        }
+        
+        function formatDateShort(dateString) {
+            const date = new Date(dateString);
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            return `${day}/${month}`;
         }
         
         function formatDateMonthYear(dateString) {
@@ -1014,5 +1082,5 @@
         const day = String(today.getDate()).padStart(2, '0');
         document.getElementById('tanggal-kehadiran').value = `${year}-${month}-${day}`;
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9632aaa4a27864ca',t:'MTc1MzE4NDQ2MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9632caedd17106ab',t:'MTc1MzE4NTc4NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
