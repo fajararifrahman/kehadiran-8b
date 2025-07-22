@@ -126,6 +126,7 @@
                 left: 0;
                 top: 0;
                 width: 100%;
+                padding: 20px;
             }
             .no-print {
                 display: none !important;
@@ -137,6 +138,34 @@
             background-color: white;
             padding: 20px;
             font-family: 'Poppins', sans-serif;
+        }
+        
+        /* Print specific styles */
+        .print-title {
+            text-align: center;
+            font-weight: bold;
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        .print-subtitle {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .print-info {
+            margin-bottom: 20px;
+        }
+        .print-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        .print-table th, .print-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+        .print-table th {
+            background-color: #f2f2f2;
+            text-align: left;
         }
     </style>
 </head>
@@ -772,7 +801,7 @@
                     
                     tableRows.push(`
                         <tr>
-                            <td style="border: 1px solid #ddd; padding: 8px;">${index + 1}</td>
+                            <td style="border: 1px solid #ddd; padding: 8px; text-align: center;">${index + 1}</td>
                             <td style="border: 1px solid #ddd; padding: 8px;">${formatDateMonthYear(formattedDate)}</td>
                             <td style="border: 1px solid #ddd; padding: 8px;">${getStatusText(kehadiran.status)}</td>
                             <td style="border: 1px solid #ddd; padding: 8px;">${kehadiran.keterangan || '-'}</td>
@@ -781,7 +810,7 @@
                 } else {
                     tableRows.push(`
                         <tr>
-                            <td style="border: 1px solid #ddd; padding: 8px;">${index + 1}</td>
+                            <td style="border: 1px solid #ddd; padding: 8px; text-align: center;">${index + 1}</td>
                             <td style="border: 1px solid #ddd; padding: 8px;">${formatDateMonthYear(formattedDate)}</td>
                             <td style="border: 1px solid #ddd; padding: 8px;">Tidak ada data</td>
                             <td style="border: 1px solid #ddd; padding: 8px;">-</td>
@@ -790,10 +819,10 @@
                 }
             });
             
-            // Create print content
+            // Create print content with improved styling for PDF output
             const printContainer = document.getElementById('print-container');
             printContainer.innerHTML = `
-                <div style="padding: 20px; font-family: Arial, sans-serif;">
+                <div style="padding: 20px; font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto;">
                     <h1 style="text-align: center; margin-bottom: 10px; font-weight: bold; font-size: 18px;">REKAP KEHADIRAN SISWA KELAS 8B</h1>
                     <p style="text-align: center; margin-bottom: 20px;">Periode: ${formatDateMonthYear(tanggalAwal)} - ${formatDateMonthYear(tanggalAkhir)}</p>
                     
@@ -805,7 +834,7 @@
                     <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
                         <thead>
                             <tr style="background-color: #f2f2f2;">
-                                <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">No.</th>
+                                <th style="border: 1px solid #ddd; padding: 8px; text-align: center;">No.</th>
                                 <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Tanggal</th>
                                 <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Status Kehadiran</th>
                                 <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Keterangan</th>
@@ -840,10 +869,16 @@
                 </div>
             `;
             
+            // Set the document title for the PDF
+            document.title = `Rekap Kehadiran - ${siswa.nama}`;
+            
             // Show print dialog
             printContainer.style.display = 'block';
             window.print();
             printContainer.style.display = 'none';
+            
+            // Reset document title
+            document.title = "Sistem Kehadiran Siswa Kelas 8B";
         }
         
         // Export to Excel
@@ -1101,5 +1136,5 @@
         const day = String(today.getDate()).padStart(2, '0');
         document.getElementById('tanggal-kehadiran').value = `${year}-${month}-${day}`;
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9632fccbc52e40e0',t:'MTc1MzE4NzgyNi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96330b5bf5f332c1',t:'MTc1MzE4ODQyMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
