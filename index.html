@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Data Kehadiran Kelas 8B</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
   <style>
     body { font-family: Arial, sans-serif; padding: 20px; background-color: #f4f4f4; }
     .tabs button { margin-right: 10px; padding: 10px 15px; border: none; background-color: #3498db; color: #fff; cursor: pointer; border-radius: 5px; }
@@ -22,6 +24,7 @@
     button.action-btn:hover { background-color: #27ae60; }
     button.delete-btn { background-color: #e74c3c; }
     button.delete-btn:hover { background-color: #c0392b; }
+    .notif { margin-top: 15px; padding: 10px; background: #2ecc71; color: #fff; border-radius: 5px; display: none; }
   </style>
 </head>
 <body>
@@ -54,6 +57,7 @@
       <thead><tr><th>No</th><th>NIS</th><th>Nama</th><th>JK</th><th>Aksi</th></tr></thead>
       <tbody></tbody>
     </table>
+    <div id="notifSiswa" class="notif">Siswa berhasil ditambahkan!</div>
   </div>
 
   <div id="tabKehadiran" class="tab">
@@ -62,8 +66,10 @@
       <label>Tanggal:</label>
       <input type="date" id="tanggal">
     </div>
-    <div id="formKehadiran"></div>
+    <form id="formKehadiran"></form>
     <button class="action-btn" onclick="simpanKehadiran()"><i class="fas fa-save"></i> Simpan Kehadiran</button>
+    <div id="notifKehadiran" class="notif">Data kehadiran berhasil disimpan!</div>
+    <div id="tabelKehadiran"></div>
   </div>
 
   <div id="tabRekap" class="tab">
@@ -78,17 +84,114 @@
     </div>
     <button class="action-btn" onclick="generateRekap()"><i class="fas fa-filter"></i> Generate Rekap</button>
     <button class="action-btn" onclick="exportExcel()"><i class="fas fa-file-excel"></i> Export Excel</button>
-    <button class="action-btn" onclick="window.print()"><i class="fas fa-print"></i> Cetak PDF</button>
     <div id="rekapHasil"></div>
   </div>
 
   <script>
+    // Firebase Config
+    const firebaseConfig = {
+      apiKey: "AIzaSyA3ENcWsQfT6RG1YRj0jfzMg4pQE2GoJj0",
+      authDomain: "kehadiran8b.firebaseapp.com",
+      projectId: "kehadiran8b",
+      storageBucket: "kehadiran8b.appspot.com",
+      messagingSenderId: "169447081278",
+      appId: "1:169447081278:web:2a2fad2157b47e8715186f",
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    let siswaList = [];
+
     function showTab(tabId) {
       document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
       document.getElementById(tabId).classList.add('active');
+      if (tabId === 'tabKehadiran') refreshFormKehadiran();
     }
-    // Secara default tampilkan tab siswa
-    document.addEventListener('DOMContentLoaded', () => showTab('tabSiswa'));
+
+    function tambahSiswa() {
+      const nis = document.getElementById('nis').value.trim();
+      const nama = document.getElementById('nama').value.trim();
+      const jk = document.getElementById('jk').value;
+      if (nis && nama) {
+        const siswa = { nis, nama, jk };
+        siswaList.push(siswa);
+        db.ref('siswa/' + nis).set(siswa);
+        refreshSiswa();
+        document.getElementById('nis').value = '';
+        document.getElementById('nama').value = '';
+        document.getElementById('notifSiswa').style.display = 'block';
+        setTimeout(() => document.getElementById('notifSiswa').style.display = 'none', 2000);
+      }
+    }
+
+    function refreshSiswa() {
+      const tbody = document.querySelector('#tabelSiswa tbody');
+      tbody.innerHTML = '';
+      siswaList.forEach((siswa, idx) => {
+        const row = `<tr><td>${idx + 1}</td><td>${siswa.nis}</td><td>${siswa.nama}</td><td>${siswa.jk}</td><td><button class='delete-btn' onclick='hapusSiswa(${idx})'>Hapus</button></td></tr>`;
+        tbody.innerHTML += row;
+      });
+    }
+
+    function hapusSiswa(index) {
+      const nis = siswaList[index].nis;
+      db.ref('siswa/' + nis).remove();
+      siswaList.splice(index, 1);
+      refreshSiswa();
+    }
+
+    function refreshFormKehadiran() {
+      const container = document.getElementById('formKehadiran');
+      container.innerHTML = '';
+      siswaList.forEach((siswa, idx) => {
+        container.innerHTML += `
+          <div style="margin-bottom:10px; background:#fff; padding:10px; border:1px solid #ccc">
+            <strong>${siswa.nama}</strong><br>
+            <label>Status Kehadiran:</label>
+            <select id="status_${idx}">
+              <option value="H">Hadir</option>
+              <option value="I">Izin</option>
+              <option value="S">Sakit</option>
+              <option value="A">Alpha</option>
+            </select>
+            <label>Keterangan:</label>
+            <input type="text" id="ket_${idx}" placeholder="Opsional...">
+          </div>
+        `;
+      });
+    }
+
+    function simpanKehadiran() {
+      const tanggal = document.getElementById('tanggal').value;
+      if (!tanggal) return alert("Tanggal wajib diisi!");
+      const kehadiran = siswaList.map((siswa, idx) => {
+        return {
+          nis: siswa.nis,
+          nama: siswa.nama,
+          status: document.getElementById(`status_${idx}`).value,
+          keterangan: document.getElementById(`ket_${idx}`).value,
+          tanggal: tanggal
+        };
+      });
+      kehadiran.forEach(data => {
+        db.ref('kehadiran/' + data.nis + '/' + data.tanggal).set(data);
+      });
+      document.getElementById('notifKehadiran').style.display = 'block';
+      setTimeout(() => document.getElementById('notifKehadiran').style.display = 'none', 2000);
+    }
+
+    function loadSiswaFromFirebase() {
+      db.ref('siswa').once('value', snapshot => {
+        siswaList = [];
+        snapshot.forEach(child => siswaList.push(child.val()));
+        refreshSiswa();
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      showTab('tabSiswa');
+      loadSiswaFromFirebase();
+    });
   </script>
 </body>
 </html>
