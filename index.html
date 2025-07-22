@@ -1,556 +1,94 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Data Kehadiran Kelas 8B</title>
-  <link
-    rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-  />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    body {
-      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-      background: #f4f7f9;
-      color: #333;
-      padding: 20px;
-    }
-    h1,
-    h2 {
-      text-align: center;
-      color: #2c3e50;
-    }
-    nav {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-    nav button {
-      background: #3498db;
-      color: #fff;
-      border: none;
-      padding: 10px 20px;
-      margin: 0 5px;
-      border-radius: 5px;
-      cursor: pointer;
-      transition: background 0.3s, transform 0.2s;
-    }
-    nav button i {
-      margin-right: 5px;
-    }
-    nav button:hover {
-      background: #2980b9;
-      transform: scale(1.05);
-    }
-    .tab {
-      display: none;
-      animation: fadeIn 0.4s ease-in-out;
-    }
-    .tab.active {
-      display: block;
-    }
-    @keyframes fadeIn {
-      from {
-        opacity: 0;
-        transform: translateY(10px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-    form input,
-    form select {
-      padding: 8px;
-      margin: 5px;
-      border-radius: 4px;
-      border: 1px solid #ccc;
-      transition: box-shadow 0.3s ease;
-    }
-    form input:focus,
-    form select:focus {
-      box-shadow: 0 0 5px #3498db;
-      outline: none;
-    }
-    form button {
-      padding: 8px 16px;
-      background: #27ae60;
-      color: #fff;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      margin-left: 5px;
-      transition: background 0.3s, transform 0.2s;
-    }
-    form button i {
-      margin-right: 5px;
-    }
-    form button:hover {
-      background: #1e8449;
-      transform: scale(1.05);
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 10px;
-      background: #fff;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
-    }
-    th,
-    td {
-      border: 1px solid #ddd;
-      padding: 10px;
-      text-align: center;
-    }
-    th {
-      background: #2ecc71;
-      color: white;
-    }
-    .actions button {
-      background: #e74c3c;
-      color: #fff;
-      border: none;
-      padding: 5px 10px;
-      border-radius: 4px;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-    .actions button i {
-      margin-right: 5px;
-    }
-    .actions button:hover {
-      background: #c0392b;
-    }
-    #rekap button {
-      margin: 10px 5px;
-      padding: 10px;
-      border-radius: 4px;
-      background: #8e44ad;
-      color: #fff;
-      border: none;
-      cursor: pointer;
-      transition: background 0.3s, transform 0.2s;
-    }
-    #rekap button i {
-      margin-right: 5px;
-    }
-    #rekap button:hover {
-      background: #6c3483;
-      transform: scale(1.05);
-    }
-    @media (max-width: 600px) {
-      table,
-      thead,
-      tbody,
-      th,
-      td,
-      tr {
-        display: block;
-      }
-      thead {
-        display: none;
-      }
-      td {
-        padding: 10px;
-        border: none;
-        border-bottom: 1px solid #eee;
-        text-align: left;
-      }
-    }
-    .icon {
-      margin-right: 5px;
-    }
-
-    /* Fitur Login Admin */
-    .login-wrapper {
-      max-width: 400px;
-      margin: 0 auto;
-      padding: 20px;
-      background: white;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-      text-align: center;
-    }
-    .login-wrapper input {
-      width: 80%;
-      margin: 10px auto;
-      display: block;
-    }
-    .login-wrapper button {
-      background: #2980b9;
-      color: white;
-    }
+    body { font-family: Arial, sans-serif; padding: 20px; background-color: #f4f4f4; }
+    .tabs button { margin-right: 10px; padding: 10px 15px; border: none; background-color: #3498db; color: #fff; cursor: pointer; border-radius: 5px; }
+    .tabs button:hover { background-color: #2980b9; }
+    .tab { display: none; margin-top: 20px; animation: fadeIn 0.5s; }
+    .tab.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; background: #fff; }
+    table, th, td { border: 1px solid #ccc; }
+    th, td { padding: 10px; text-align: left; }
+    .form-group { margin-bottom: 10px; }
+    .form-group label { display: block; margin-bottom: 5px; }
+    .form-group input, .form-group select { width: 100%; padding: 8px; }
+    button.action-btn { background-color: #2ecc71; color: #fff; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; }
+    button.action-btn:hover { background-color: #27ae60; }
+    button.delete-btn { background-color: #e74c3c; }
+    button.delete-btn:hover { background-color: #c0392b; }
   </style>
 </head>
 <body>
-  <h1><i class="fas fa-user-check icon"></i>Data Kehadiran Kelas 8B</h1>
-
-  <nav>
-    <button onclick="showTab('siswa')">
-      <i class="fas fa-users"></i> Siswa
-    </button>
-    <button onclick="showTab('kehadiran')">
-      <i class="fas fa-calendar-check"></i> Kehadiran
-    </button>
-    <button onclick="showTab('rekap')">
-      <i class="fas fa-chart-bar"></i> Rekap
-    </button>
-  </nav>
-
-  <!-- Login Admin -->
-  <div class="login-wrapper" id="loginDiv">
-    <h2><i class="fas fa-user-shield"></i> Login Admin</h2>
-    <input type="text" id="adminUser" placeholder="Username" />
-    <input type="password" id="adminPass" placeholder="Password" />
-    <button onclick="loginAdmin()">
-      <i class="fas fa-sign-in-alt"></i> Masuk
-    </button>
+  <h1><i class="fas fa-user-check"></i> Kehadiran Siswa Kelas 8B</h1>
+  <div class="tabs">
+    <button onclick="showTab('tabSiswa')"><i class="fas fa-users"></i> Siswa</button>
+    <button onclick="showTab('tabKehadiran')"><i class="fas fa-calendar-check"></i> Kehadiran</button>
+    <button onclick="showTab('tabRekap')"><i class="fas fa-chart-bar"></i> Rekap</button>
   </div>
 
-  <!-- Tab Siswa -->
-  <div class="tab" id="siswa">
-    <h2><i class="fas fa-users"></i> Data Siswa</h2>
-    <form id="formSiswa" onsubmit="tambahSiswa(event)">
-      <input type="text" id="nis" placeholder="NIS" required />
-      <input type="text" id="nama" placeholder="Nama Siswa" required />
-      <select id="jenisKelamin" required>
-        <option value="" disabled selected>Jenis Kelamin</option>
-        <option value="Laki-laki">Laki-laki</option>
-        <option value="Perempuan">Perempuan</option>
+  <div id="tabSiswa" class="tab">
+    <h2>Data Siswa</h2>
+    <div class="form-group">
+      <label>NIS:</label>
+      <input type="text" id="nis">
+    </div>
+    <div class="form-group">
+      <label>Nama Siswa:</label>
+      <input type="text" id="nama">
+    </div>
+    <div class="form-group">
+      <label>Jenis Kelamin:</label>
+      <select id="jk">
+        <option value="L">Laki-laki</option>
+        <option value="P">Perempuan</option>
       </select>
-      <button type="submit"><i class="fas fa-plus"></i> Tambah</button>
-    </form>
+    </div>
+    <button class="action-btn" onclick="tambahSiswa()"><i class="fas fa-plus"></i> Tambah Siswa</button>
     <table id="tabelSiswa">
-      <thead>
-        <tr>
-          <th>No.</th>
-          <th>NIS</th>
-          <th>Nama Siswa</th>
-          <th>Jenis Kelamin</th>
-          <th>Aksi</th>
-        </tr>
-      </thead>
+      <thead><tr><th>No</th><th>NIS</th><th>Nama</th><th>JK</th><th>Aksi</th></tr></thead>
       <tbody></tbody>
     </table>
   </div>
 
-  <!-- Tab Kehadiran -->
-  <div class="tab" id="kehadiran">
-    <h2><i class="fas fa-calendar-check"></i> Input Kehadiran</h2>
-    <form id="formKehadiran" onsubmit="tambahKehadiran(event)">
-      <select id="selectSiswa" required>
-        <option value="" disabled selected>Pilih Siswa</option>
-      </select>
-      <select id="status" required>
-        <option value="" disabled selected>Status Kehadiran</option>
-        <option value="H">Hadir</option>
-        <option value="I">Izin</option>
-        <option value="S">Sakit</option>
-        <option value="A">Alpha</option>
-      </select>
-      <input type="date" id="tanggal" required />
-      <input
-        type="text"
-        id="keterangan"
-        placeholder="Keterangan (opsional)"
-        autocomplete="off"
-      />
-      <button type="submit"><i class="fas fa-check"></i> Simpan</button>
-    </form>
+  <div id="tabKehadiran" class="tab">
+    <h2>Input Kehadiran</h2>
+    <div class="form-group">
+      <label>Tanggal:</label>
+      <input type="date" id="tanggal">
+    </div>
+    <div id="formKehadiran"></div>
+    <button class="action-btn" onclick="simpanKehadiran()"><i class="fas fa-save"></i> Simpan Kehadiran</button>
   </div>
 
-  <!-- Tab Rekap -->
-  <div class="tab" id="rekap">
-    <h2><i class="fas fa-chart-bar"></i> Rekap Kehadiran</h2>
-    <label>
-      Tanggal Awal:
-      <input type="date" id="tanggalAwal" required />
-    </label>
-    <label>
-      Tanggal Akhir:
-      <input type="date" id="tanggalAkhir" required />
-    </label>
-    <button onclick="generateRekap()">
-      <i class="fas fa-file-alt"></i> Generate Rekap
-    </button>
-    <button onclick="exportExcel()">
-      <i class="fas fa-file-export"></i> Export Excel
-    </button>
-
-    <div id="hasilRekap"></div>
+  <div id="tabRekap" class="tab">
+    <h2>Rekap Kehadiran</h2>
+    <div class="form-group">
+      <label>Tanggal Awal:</label>
+      <input type="date" id="tanggalAwal">
+    </div>
+    <div class="form-group">
+      <label>Tanggal Akhir:</label>
+      <input type="date" id="tanggalAkhir">
+    </div>
+    <button class="action-btn" onclick="generateRekap()"><i class="fas fa-filter"></i> Generate Rekap</button>
+    <button class="action-btn" onclick="exportExcel()"><i class="fas fa-file-excel"></i> Export Excel</button>
+    <button class="action-btn" onclick="window.print()"><i class="fas fa-print"></i> Cetak PDF</button>
+    <div id="rekapHasil"></div>
   </div>
 
   <script>
-    // Login Admin
-    function loginAdmin() {
-      const user = document.getElementById("adminUser").value;
-      const pass = document.getElementById("adminPass").value;
-      if (user === "admin" && pass === "admin123") {
-        document.getElementById("loginDiv").style.display = "none";
-        document
-          .querySelectorAll("nav, .tab, h1")
-          .forEach((el) => (el.style.display = "block"));
-        showTab("siswa");
-      } else {
-        alert("Username atau Password salah");
-      }
+    function showTab(tabId) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active');
     }
-    document.addEventListener("DOMContentLoaded", () => {
-      document
-        .querySelectorAll("nav, .tab, h1")
-        .forEach((el) => (el.style.display = "none"));
-    });
-
-    // Tab Function
-    function showTab(tab) {
-      document.querySelectorAll(".tab").forEach((el) => {
-        el.classList.remove("active");
-      });
-      const tabEl = document.getElementById(tab);
-      if (tabEl) tabEl.classList.add("active");
-    }
-
-    // Data siswa dan kehadiran dalam localStorage sebagai contoh
-    let dataSiswa = JSON.parse(localStorage.getItem("dataSiswa")) || [];
-    let dataKehadiran = JSON.parse(localStorage.getItem("dataKehadiran")) || [];
-
-    // Tampilkan data siswa di tabel dan pilihan select
-    function refreshSiswa() {
-      const tbody = document.querySelector("#tabelSiswa tbody");
-      tbody.innerHTML = "";
-      const select = document.getElementById("selectSiswa");
-      select.innerHTML =
-        '<option value="" disabled selected>Pilih Siswa</option>';
-
-      dataSiswa.forEach((siswa, idx) => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${idx + 1}</td>
-          <td>${siswa.nis}</td>
-          <td>${siswa.nama}</td>
-          <td>${siswa.jenisKelamin}</td>
-          <td class="actions">
-            <button onclick="hapusSiswa('${siswa.nis}')">
-              <i class="fas fa-trash"></i> Hapus
-            </button>
-          </td>
-        `;
-        tbody.appendChild(tr);
-
-        // Tambah opsi select
-        const option = document.createElement("option");
-        option.value = siswa.nis;
-        option.textContent = siswa.nama;
-        select.appendChild(option);
-      });
-    }
-
-    // Tambah siswa
-    function tambahSiswa(e) {
-      e.preventDefault();
-      const nis = document.getElementById("nis").value.trim();
-      const nama = document.getElementById("nama").value.trim();
-      const jenisKelamin = document.getElementById("jenisKelamin").value;
-      if (nis && nama && jenisKelamin) {
-        // Cek nis unik
-        if (dataSiswa.find((s) => s.nis === nis)) {
-          alert("NIS sudah ada");
-          return;
-        }
-        dataSiswa.push({ nis, nama, jenisKelamin });
-        localStorage.setItem("dataSiswa", JSON.stringify(dataSiswa));
-        refreshSiswa();
-        e.target.reset();
-      }
-    }
-
-    // Hapus siswa dan kehadiran terkait
-    function hapusSiswa(nis) {
-      if (
-        confirm(
-          "Yakin hapus siswa dan semua data kehadirannya untuk NIS: " + nis + "?"
-        )
-      ) {
-        dataSiswa = dataSiswa.filter((s) => s.nis !== nis);
-        dataKehadiran = dataKehadiran.filter((k) => k.nis !== nis);
-        localStorage.setItem("dataSiswa", JSON.stringify(dataSiswa));
-        localStorage.setItem("dataKehadiran", JSON.stringify(dataKehadiran));
-        refreshSiswa();
-      }
-    }
-
-    // Tambah data kehadiran
-    function tambahKehadiran(e) {
-      e.preventDefault();
-      const nis = document.getElementById("selectSiswa").value;
-      const status = document.getElementById("status").value;
-      const tanggal = document.getElementById("tanggal").value;
-      const keterangan = document.getElementById("keterangan").value.trim();
-      if (nis && status && tanggal) {
-        dataKehadiran.push({ nis, status, tanggal, keterangan });
-        localStorage.setItem("dataKehadiran", JSON.stringify(dataKehadiran));
-        alert("Data kehadiran tersimpan");
-        e.target.reset();
-      }
-    }
-
-    // Generate Rekap
-    function generateRekap() {
-      const tAwal = document.getElementById("tanggalAwal").value;
-      const tAkhir = document.getElementById("tanggalAkhir").value;
-      if (!tAwal || !tAkhir) {
-        alert("Pilih tanggal awal dan akhir");
-        return;
-      }
-      if (tAwal > tAkhir) {
-        alert("Tanggal awal harus lebih kecil atau sama dengan tanggal akhir");
-        return;
-      }
-
-      const filteredSiswa = dataSiswa;
-      const rekapDiv = document.getElementById("hasilRekap");
-      rekapDiv.innerHTML = "";
-
-      // Header tabel
-      let html =
-        '<table><thead><tr><th>No.</th><th>NIS</th><th>Nama Siswa</th><th>Detail Kehadiran</th></tr></thead><tbody>';
-
-      filteredSiswa.forEach((siswa, idx) => {
-        const hadir = dataKehadiran.filter(
-          (k) =>
-            k.nis === siswa.nis &&
-            k.tanggal >= tAwal &&
-            k.tanggal <= tAkhir &&
-            k.status === "H"
-        ).length;
-        const izin = dataKehadiran.filter(
-          (k) =>
-            k.nis === siswa.nis &&
-            k.tanggal >= tAwal &&
-            k.tanggal <= tAkhir &&
-            k.status === "I"
-        ).length;
-        const sakit = dataKehadiran.filter(
-          (k) =>
-            k.nis === siswa.nis &&
-            k.tanggal >= tAwal &&
-            k.tanggal <= tAkhir &&
-            k.status === "S"
-        ).length;
-        const alpha = dataKehadiran.filter(
-          (k) =>
-            k.nis === siswa.nis &&
-            k.tanggal >= tAwal &&
-            k.tanggal <= tAkhir &&
-            k.status === "A"
-        ).length;
-
-        // Detail per tanggal
-        let detailHtml = "<ul style='list-style:none; padding-left:0;'>";
-        const records = dataKehadiran.filter(
-          (k) => k.nis === siswa.nis && k.tanggal >= tAwal && k.tanggal <= tAkhir
-        );
-        records.forEach((r) => {
-          detailHtml += `<li>${r.tanggal}: ${
-            r.status === "H"
-              ? "Hadir"
-              : r.status === "I"
-              ? "Izin"
-              : r.status === "S"
-              ? "Sakit"
-              : "Alpha"
-          }${r.keterangan ? " - " + r.keterangan : ""}</li>`;
-        });
-        detailHtml += "</ul>";
-
-        html += `<tr>
-          <td>${idx + 1}</td>
-          <td>${siswa.nis}</td>
-          <td>${siswa.nama}</td>
-          <td>
-            ${detailHtml}
-            <b>Total:</b> H:${hadir} I:${izin} S:${sakit} A:${alpha}
-          </td>
-        </tr>`;
-      });
-
-      html +=
-        "</tbody></table><p><b>Keterangan:</b> H = Hadir, I = Izin, S = Sakit, A = Alpha</p>";
-
-      rekapDiv.innerHTML = html;
-    }
-
-    // Export Excel
-    function exportExcel() {
-      const tAwal = document.getElementById("tanggalAwal").value;
-      const tAkhir = document.getElementById("tanggalAkhir").value;
-      if (!tAwal || !tAkhir) {
-        alert("Pilih tanggal awal dan akhir");
-        return;
-      }
-      if (tAwal > tAkhir) {
-        alert("Tanggal awal harus lebih kecil atau sama dengan tanggal akhir");
-        return;
-      }
-
-      // Header kolom tanggal
-      const dates = [];
-      let current = new Date(tAwal);
-      const end = new Date(tAkhir);
-      while (current <= end) {
-        const d = current.toISOString().split("T")[0];
-        dates.push(d);
-        current.setDate(current.getDate() + 1);
-      }
-
-      const wsData = [
-        [
-          "No.",
-          "Nama Siswa",
-          ...dates,
-          "Keterangan",
-        ],
-      ];
-
-      dataSiswa.forEach((siswa, idx) => {
-        const row = [idx + 1, siswa.nama];
-        let ket = "";
-
-        dates.forEach((date) => {
-          const record = dataKehadiran.find(
-            (k) => k.nis === siswa.nis && k.tanggal === date
-          );
-          row.push(record ? record.status : "");
-          if (record && record.keterangan) {
-            ket += `${date}: ${record.keterangan}\n`;
-          }
-        });
-
-        row.push(ket);
-        wsData.push(row);
-      });
-
-      const wb = XLSX.utils.book_new();
-      const ws = XLSX.utils.aoa_to_sheet(wsData);
-      XLSX.utils.book_append_sheet(wb, ws, "Rekap Kehadiran");
-
-      // Add keterangan di bawah tabel (di sheet baru)
-      const wsKet = XLSX.utils.aoa_to_sheet([
-        ["Keterangan:"],
-        ["H = Hadir"],
-        ["I = Izin"],
-        ["S = Sakit"],
-        ["A = Alpha"],
-      ]);
-      XLSX.utils.book_append_sheet(wb, wsKet, "Keterangan");
-
-      XLSX.writeFile(wb, "rekap_kehadiran_8b.xlsx");
-    }
-
-    // Inisialisasi tabel siswa saat halaman siap
-    document.addEventListener("DOMContentLoaded", refreshSiswa);
+    // Secara default tampilkan tab siswa
+    document.addEventListener('DOMContentLoaded', () => showTab('tabSiswa'));
   </script>
 </body>
 </html>
