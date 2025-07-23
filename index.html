@@ -1399,6 +1399,42 @@
                 tableData.push(row);
             });
             
+            // Hitung lebar kolom yang sesuai berdasarkan jumlah tanggal
+            const totalColumns = header[0].length;
+            const pageWidth = doc.internal.pageSize.getWidth() - 20; // Margin kiri dan kanan 10mm
+            
+            // Kolom tetap (No, NIS, Nama)
+            const fixedColWidth = {
+                0: 8, // No
+                1: 15, // NIS
+                2: 30, // Nama Siswa
+            };
+            
+            // Sisa lebar untuk kolom tanggal dan total
+            const remainingWidth = pageWidth - (fixedColWidth[0] + fixedColWidth[1] + fixedColWidth[2]);
+            const remainingCols = totalColumns - 3;
+            
+            // Lebar untuk kolom tanggal (lebih kecil) dan total (lebih besar)
+            const dateColWidth = remainingWidth / remainingCols * 0.8;
+            const totalColWidth = remainingWidth / remainingCols * 1.2;
+            
+            // Buat objek columnStyles
+            const columnStyles = {
+                0: { cellWidth: fixedColWidth[0] },
+                1: { cellWidth: fixedColWidth[1] },
+                2: { cellWidth: fixedColWidth[2] },
+            };
+            
+            // Atur lebar kolom tanggal
+            for (let i = 3; i < totalColumns - 4; i++) {
+                columnStyles[i] = { cellWidth: dateColWidth / (totalColumns - 7) };
+            }
+            
+            // Atur lebar kolom total
+            for (let i = totalColumns - 4; i < totalColumns; i++) {
+                columnStyles[i] = { cellWidth: totalColWidth / 4 };
+            }
+            
             // Tambahkan tabel dengan desain yang lebih menarik dan pastikan fit dengan halaman
             doc.autoTable({
                 head: header,
@@ -1419,11 +1455,7 @@
                 // Pastikan tabel fit dengan halaman
                 margin: { left: 10, right: 10 },
                 tableWidth: 'auto',
-                columnStyles: {
-                    0: { cellWidth: 8 }, // No
-                    1: { cellWidth: 15 }, // NIS
-                    2: { cellWidth: 30 }, // Nama Siswa
-                },
+                columnStyles: columnStyles,
                 didDrawPage: function(data) {
                     // Tambahkan header pada setiap halaman
                     if (data.pageNumber > 1) {
@@ -1549,5 +1581,5 @@
             loadTabelSiswa();
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'963ba93105d7ff95',t:'MTc1MzI3ODc3NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'963bd40fe4c4ce4f',t:'MTc1MzI4MDUzMC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
