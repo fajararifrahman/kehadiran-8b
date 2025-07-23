@@ -1028,6 +1028,9 @@
                 alternateRowStyles: {
                     fillColor: [240, 244, 248]
                 },
+                // Pastikan tabel fit dengan halaman
+                margin: { left: 14, right: 14 },
+                tableWidth: 'auto',
                 columnStyles: {
                     0: { cellWidth: 15 },
                     1: { cellWidth: 50 },
@@ -1265,6 +1268,23 @@
                 }
             }
             
+            // Atur lebar kolom agar semua kolom terlihat dengan baik
+            const colWidths = [];
+            // Kolom No
+            colWidths[0] = { wch: 5 };
+            // Kolom Nama Siswa
+            colWidths[1] = { wch: 30 };
+            // Kolom tanggal
+            for (let i = 2; i < header.length - 4; i++) {
+                colWidths[i] = { wch: 6 };
+            }
+            // Kolom total
+            for (let i = header.length - 4; i < header.length; i++) {
+                colWidths[i] = { wch: 8 };
+            }
+            
+            ws['!cols'] = colWidths;
+            
             XLSX.utils.book_append_sheet(wb, ws, 'Rekap Kehadiran');
             
             // Konversi ke binary string
@@ -1379,7 +1399,7 @@
                 tableData.push(row);
             });
             
-            // Tambahkan tabel dengan desain yang lebih menarik
+            // Tambahkan tabel dengan desain yang lebih menarik dan pastikan fit dengan halaman
             doc.autoTable({
                 head: header,
                 body: tableData,
@@ -1395,6 +1415,22 @@
                 },
                 alternateRowStyles: {
                     fillColor: [240, 244, 248]
+                },
+                // Pastikan tabel fit dengan halaman
+                margin: { left: 10, right: 10 },
+                tableWidth: 'auto',
+                columnStyles: {
+                    0: { cellWidth: 8 }, // No
+                    1: { cellWidth: 15 }, // NIS
+                    2: { cellWidth: 30 }, // Nama Siswa
+                },
+                didDrawPage: function(data) {
+                    // Tambahkan header pada setiap halaman
+                    if (data.pageNumber > 1) {
+                        doc.setFontSize(12);
+                        doc.setFont('helvetica', 'bold');
+                        doc.text('REKAP KEHADIRAN SISWA KELAS 8B', doc.internal.pageSize.getWidth() / 2, 15, { align: 'center' });
+                    }
                 },
                 didDrawCell: function(data) {
                     // Tambahkan warna pada sel status
@@ -1513,5 +1549,5 @@
             loadTabelSiswa();
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'963b944880eba110',t:'MTc1MzI3NzkxNy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'963ba93105d7ff95',t:'MTc1MzI3ODc3NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
