@@ -1095,7 +1095,7 @@
             });
             
             // Buat header untuk Excel
-            const header = ['No', 'NIS', 'Nama Siswa'];
+            const header = ['No', 'Nama Siswa'];
             
             // Tambahkan tanggal ke header
             formattedTanggalList.forEach(tanggal => {
@@ -1106,10 +1106,19 @@
             header.push('Total H', 'Total I', 'Total S', 'Total A');
             
             // Buat data untuk Excel
-            const data = [header];
+            const data = [];
+            
+            // Tambahkan judul dengan huruf besar
+            data.push(['REKAP KEHADIRAN SISWA KELAS 8B']);
+            
+            // Tambahkan baris kosong
+            data.push([]);
+            
+            // Tambahkan header
+            data.push(header);
             
             dataSiswa.forEach((siswa, index) => {
-                const row = [index + 1, siswa.nis, siswa.nama];
+                const row = [index + 1, siswa.nama];
                 
                 // Hitung total kehadiran
                 let totalHadir = 0;
@@ -1149,28 +1158,24 @@
                 data.push(row);
             });
             
+            // Tambahkan keterangan
+            data.push([]);
+            data.push(['Keterangan:']);
+            data.push(['H = Hadir']);
+            data.push(['I = Izin']);
+            data.push(['S = Sakit']);
+            data.push(['A = Alpha']);
+            
             // Buat workbook dan worksheet
             const ws = XLSX.utils.aoa_to_sheet(data);
             const wb = XLSX.utils.book_new();
-            
-            // Tambahkan judul dengan huruf besar
-            XLSX.utils.sheet_add_aoa(ws, [['REKAP KEHADIRAN SISWA KELAS 8B']], { origin: 'A1' });
             
             // Merge cells untuk judul
             if(!ws['!merges']) ws['!merges'] = [];
             ws['!merges'].push({ s: { r: 0, c: 0 }, e: { r: 0, c: header.length - 1 } });
             
-            // Tambahkan keterangan
-            const lastRow = data.length + 2;
-            XLSX.utils.sheet_add_aoa(ws, [
-                ['Keterangan:'],
-                ['H = Hadir'],
-                ['I = Izin'],
-                ['S = Sakit'],
-                ['A = Alpha']
-            ], { origin: `A${lastRow}` });
-            
             // Styling
+            // Kita perlu membuat objek style untuk setiap sel
             const range = XLSX.utils.decode_range(ws['!ref']);
             
             // Style untuk judul
@@ -1186,7 +1191,7 @@
             
             // Style untuk header
             for (let C = range.s.c; C <= range.e.c; ++C) {
-                const address = XLSX.utils.encode_col(C) + '2'; // Header row
+                const address = XLSX.utils.encode_col(C) + '3'; // Header row
                 if (!ws[address]) continue;
                 ws[address].s = { 
                     font: { bold: true, color: { rgb: "FFFFFF" } },
@@ -1196,13 +1201,13 @@
             }
             
             // Style untuk data
-            for (let R = 2; R <= range.e.r; ++R) {
+            for (let R = 3; R <= range.e.r - 6; ++R) { // Skip keterangan rows
                 for (let C = 0; C <= range.e.c; ++C) {
                     const address = XLSX.utils.encode_cell({ r: R, c: C });
                     if (!ws[address]) continue;
                     
                     // Style untuk kolom status (tanggal)
-                    if (C >= 3 && C < header.length - 4) {
+                    if (C >= 2 && C < header.length - 4) {
                         const status = ws[address].v;
                         if (status === 'H') {
                             ws[address].s = { 
@@ -1238,6 +1243,25 @@
                             alignment: { horizontal: 'center' }
                         };
                     }
+                }
+            }
+            
+            // Style untuk keterangan
+            for (let R = range.e.r - 4; R <= range.e.r; ++R) {
+                const address = XLSX.utils.encode_cell({ r: R, c: 0 });
+                if (!ws[address]) continue;
+                
+                const keterangan = ws[address].v;
+                if (keterangan === 'H = Hadir') {
+                    ws[address].s = { font: { color: { rgb: "10B981" } } };
+                } else if (keterangan === 'I = Izin') {
+                    ws[address].s = { font: { color: { rgb: "CA8A04" } } };
+                } else if (keterangan === 'S = Sakit') {
+                    ws[address].s = { font: { color: { rgb: "2563EB" } } };
+                } else if (keterangan === 'A = Alpha') {
+                    ws[address].s = { font: { color: { rgb: "DC2626" } } };
+                } else if (keterangan === 'Keterangan:') {
+                    ws[address].s = { font: { bold: true } };
                 }
             }
             
@@ -1489,5 +1513,5 @@
             loadTabelSiswa();
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'963b6195a19c6023',t:'MTc1MzI3NTg0MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'963b944880eba110',t:'MTc1MzI3NzkxNy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
