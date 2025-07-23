@@ -5,24 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistem Kehadiran Siswa Kelas 8B</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Add jsPDF library -->
+    <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
+    <script src="https://unpkg.com/file-saver/dist/FileSaver.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <style>
         body {
-            font-family: 'Poppins', sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f0f4f8;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-        .tab-active {
-            background-color: #4f46e5;
-            color: white;
         }
         .tab-content {
             display: none;
@@ -30,1019 +20,637 @@
         .tab-content.active {
             display: block;
         }
+        .header-gradient {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+        }
         .btn-primary {
-            background-color: #4f46e5;
-            color: white;
             transition: all 0.3s ease;
         }
         .btn-primary:hover {
-            background-color: #4338ca;
-        }
-        .btn-danger {
-            background-color: #ef4444;
-            color: white;
-            transition: all 0.3s ease;
-        }
-        .btn-danger:hover {
-            background-color: #dc2626;
-        }
-        .btn-success {
-            background-color: #10b981;
-            color: white;
-            transition: all 0.3s ease;
-        }
-        .btn-success:hover {
-            background-color: #059669;
-        }
-        .btn-info {
-            background-color: #3b82f6;
-            color: white;
-            transition: all 0.3s ease;
-        }
-        .btn-info:hover {
-            background-color: #2563eb;
-        }
-        .btn-warning {
-            background-color: #f59e0b;
-            color: white;
-            transition: all 0.3s ease;
-        }
-        .btn-warning:hover {
-            background-color: #d97706;
-        }
-        .attendance-option {
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        .attendance-option:hover {
             transform: translateY(-2px);
-        }
-        .attendance-option.selected {
-            border: 2px solid #4f46e5;
-            background-color: #eef2ff;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
         .table-container {
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-        }
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 50;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0, 0, 0, 0.5);
-        }
-        .modal-content {
-            background-color: #fefefe;
-            margin: 15vh auto;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            max-width: 600px;
-            width: 90%;
-        }
-        .close {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        .close:hover {
-            color: black;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
         }
         .status-icon {
-            font-size: 18px; /* Reduced from 24px */
-            margin-bottom: 2px; /* Reduced from 4px */
-        }
-        
-        /* Print styles */
-        @media print {
-            body * {
-                visibility: hidden;
-            }
-            #print-container, #print-container * {
-                visibility: visible;
-            }
-            #print-container {
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 100%;
-                padding: 20px;
-            }
-            .no-print {
-                display: none !important;
-            }
-        }
-        
-        #print-container {
-            display: none;
-            background-color: white;
-            padding: 20px;
-            font-family: 'Poppins', sans-serif;
-        }
-        
-        /* Print specific styles */
-        .print-title {
-            text-align: center;
-            font-weight: bold;
-            font-size: 18px;
-            margin-bottom: 10px;
-        }
-        .print-subtitle {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .print-info {
-            margin-bottom: 20px;
-        }
-        .print-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-        }
-        .print-table th, .print-table td {
-            border: 1px solid #ddd;
-            padding: 8px;
-        }
-        .print-table th {
-            background-color: #f2f2f2;
-            text-align: left;
-        }
-        
-        /* Compact table styles */
-        .compact-table th {
-            padding: 0.5rem 0.75rem;
-            font-size: 0.875rem;
-        }
-        
-        .compact-table td {
-            padding: 0.5rem 0.75rem;
-            font-size: 0.875rem;
-        }
-        
-        .compact-btn {
-            padding: 0.25rem 0.5rem;
-            font-size: 0.75rem;
-        }
-        
-        /* Footer styles */
-        .footer {
-            margin-top: auto;
-            padding: 2rem;
-            background-color: #f8fafc;
-            border-top: 1px solid #e2e8f0;
-            text-align: left;
-            color: #64748b;
-            font-size: 0.875rem;
-        }
-        
-        /* Login styles */
-        .login-container {
+            width: 40px;
+            height: 40px;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
-            min-height: 100vh;
-            background-color: #f0f4f8;
-            background-image: linear-gradient(135deg, #f0f4f8 0%, #d5e3f3 100%);
+            border-radius: 50%;
+            margin: 0 auto 4px auto;
         }
-        
-        .login-card {
-            background-color: white;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-            width: 100%;
-            max-width: 400px;
-            padding: 2rem;
-        }
-        
-        .login-header {
+        .status-label {
+            font-size: 12px;
             text-align: center;
-            margin-bottom: 1.5rem;
-        }
-        
-        .login-icon {
-            font-size: 3rem;
-            color: #4f46e5;
-            margin-bottom: 1rem;
-        }
-        
-        .login-form-group {
-            margin-bottom: 1.5rem;
-        }
-        
-        .login-label {
             display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 500;
-            color: #374151;
         }
-        
-        .login-input {
-            width: 100%;
-            padding: 0.75rem 1rem;
-            border: 1px solid #d1d5db;
-            border-radius: 0.375rem;
-            font-size: 1rem;
-            transition: border-color 0.15s ease-in-out;
+        .tooltip {
+            position: relative;
+            display: inline-block;
         }
-        
-        .login-input:focus {
-            outline: none;
-            border-color: #4f46e5;
-            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
-        }
-        
-        .login-button {
-            width: 100%;
-            padding: 0.75rem 1rem;
-            background-color: #4f46e5;
-            color: white;
-            border: none;
-            border-radius: 0.375rem;
-            font-size: 1rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: background-color 0.15s ease-in-out;
-        }
-        
-        .login-button:hover {
-            background-color: #4338ca;
-        }
-        
-        .login-error {
-            color: #ef4444;
-            font-size: 0.875rem;
-            margin-top: 0.5rem;
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 120px;
+            background-color: #333;
+            color: #fff;
             text-align: center;
+            border-radius: 6px;
+            padding: 5px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -60px;
+            opacity: 0;
+            transition: opacity 0.3s;
         }
-        
-        .app-container {
-            display: none;
-        }
-        
-        /* Session timeout modal */
-        .timeout-modal {
-            display: none;
-            position: fixed;
-            z-index: 100;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0, 0, 0, 0.7);
-        }
-        
-        .timeout-modal-content {
-            background-color: #fefefe;
-            margin: 15vh auto;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            max-width: 400px;
-            width: 90%;
-            text-align: center;
-        }
-        
-        .timeout-icon {
-            font-size: 3rem;
-            color: #f59e0b;
-            margin-bottom: 1rem;
-        }
-        
-        .timeout-countdown {
-            font-size: 2rem;
-            font-weight: bold;
-            color: #ef4444;
-            margin: 1rem 0;
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
         }
     </style>
 </head>
 <body>
-    <!-- Login Screen -->
-    <div id="login-screen" class="login-container">
-        <div class="login-card">
-            <div class="login-header">
-                <div class="login-icon">
-                    <i class="fas fa-user-shield"></i>
-                </div>
-                <h1 class="text-2xl font-bold text-gray-800">Login Admin Rekap Data</h1>
-                <p class="text-gray-600 mt-1">Masukkan kredensial untuk akses sistem</p>
+    <div class="min-h-screen flex flex-col">
+        <!-- Header -->
+        <header class="header-gradient text-white p-6 shadow-md">
+            <div class="container mx-auto">
+                <h1 class="text-3xl font-bold">Sistem Kehadiran Siswa Kelas 8B</h1>
+                <p class="mt-2 opacity-90">Monitoring kehadiran siswa secara efektif</p>
             </div>
-            
-            <form id="login-form">
-                <div class="login-form-group">
-                    <label for="username" class="login-label">Username</label>
-                    <input type="text" id="username" class="login-input" placeholder="Masukkan username" required>
-                </div>
-                
-                <div class="login-form-group">
-                    <label for="password" class="login-label">Password</label>
-                    <input type="password" id="password" class="login-input" placeholder="Masukkan password" required>
-                </div>
-                
-                <div id="login-error" class="login-error hidden"></div>
-                
-                <button type="submit" class="login-button">
-                    <i class="fas fa-sign-in-alt mr-2"></i> Login
-                </button>
-            </form>
-        </div>
-    </div>
+        </header>
 
-    <!-- Session Timeout Modal -->
-    <div id="timeout-modal" class="timeout-modal">
-        <div class="timeout-modal-content">
-            <div class="timeout-icon">
-                <i class="fas fa-clock"></i>
+        <!-- Main Content -->
+        <main class="container mx-auto flex-grow p-6">
+            <!-- Tabs -->
+            <div class="mb-6 bg-white rounded-lg shadow-sm">
+                <div class="flex border-b">
+                    <button id="tab-siswa" class="tab-btn px-6 py-4 font-medium text-blue-600 border-b-2 border-blue-600">Data Siswa</button>
+                    <button id="tab-kehadiran" class="tab-btn px-6 py-4 font-medium text-gray-500 hover:text-blue-600">Kehadiran</button>
+                    <button id="tab-rekap" class="tab-btn px-6 py-4 font-medium text-gray-500 hover:text-blue-600">Rekap Kehadiran</button>
+                </div>
             </div>
-            <h2 class="text-xl font-semibold mb-2">Sesi Akan Berakhir</h2>
-            <p class="mb-3">Anda akan logout otomatis karena tidak ada aktivitas dalam:</p>
-            <div class="timeout-countdown" id="timeout-countdown">30</div>
-            <div class="flex justify-center space-x-4">
-                <button id="btn-stay-logged-in" class="btn-primary px-4 py-1.5 rounded-md font-medium text-sm">
-                    Tetap Login
-                </button>
-                <button id="btn-logout-now" class="btn-danger px-4 py-1.5 rounded-md font-medium text-sm">
-                    Logout Sekarang
-                </button>
-            </div>
-        </div>
-    </div>
 
-    <!-- Main Application -->
-    <div id="app-container" class="app-container">
-        <div class="flex-grow">
-            <header class="bg-white shadow-md">
-                <div class="container mx-auto px-4 py-6">
-                    <div class="flex justify-between items-center">
+            <!-- Tab Content: Data Siswa -->
+            <div id="content-siswa" class="tab-content active bg-white rounded-lg p-6 shadow-sm">
+                <h2 class="text-2xl font-bold mb-6">Data Siswa</h2>
+                
+                <!-- Form Tambah Siswa -->
+                <div class="mb-8 bg-blue-50 p-6 rounded-lg">
+                    <h3 class="text-lg font-semibold mb-4">Tambah Siswa Baru</h3>
+                    <form id="form-siswa" class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
-                            <h1 class="text-3xl font-bold text-gray-800">Sistem Kehadiran Siswa Kelas 8B</h1>
-                            <p class="text-gray-600 mt-1">Monitoring kehadiran siswa secara efektif</p>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">NIS</label>
+                            <input type="text" id="nis" class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
                         </div>
-                        <!-- Logout button removed as requested -->
-                    </div>
-                </div>
-            </header>
-
-            <div class="container mx-auto px-4 py-6">
-                <!-- Tab Navigation -->
-                <div class="flex border-b border-gray-200 mb-6">
-                    <button class="tab-btn tab-active px-6 py-3 font-medium rounded-t-lg" data-tab="siswa">Data Siswa</button>
-                    <button class="tab-btn px-6 py-3 font-medium rounded-t-lg" data-tab="kehadiran">Kehadiran</button>
-                    <button class="tab-btn px-6 py-3 font-medium rounded-t-lg" data-tab="rekap">Rekap Kehadiran</button>
-                </div>
-
-                <!-- Tab Content -->
-                <div class="tab-content active" id="siswa">
-                    <div class="bg-white rounded-lg shadow-md p-4 mb-6">
-                        <div class="flex justify-between items-center mb-3">
-                            <h2 class="text-lg font-semibold">Data Siswa</h2>
-                            <button id="btn-tambah-siswa" class="btn-primary px-3 py-1.5 rounded-md font-medium flex items-center text-sm">
-                                <i class="fas fa-plus mr-2"></i> Tambah Siswa
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Nama Siswa</label>
+                            <input type="text" id="nama" class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Jenis Kelamin</label>
+                            <select id="jenis-kelamin" class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                                <option value="">Pilih Jenis Kelamin</option>
+                                <option value="Laki-laki">Laki-laki</option>
+                                <option value="Perempuan">Perempuan</option>
+                            </select>
+                        </div>
+                        <div class="md:col-span-3">
+                            <button type="submit" class="btn-primary bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                                Tambah Siswa
                             </button>
                         </div>
-                        
-                        <!-- Form Tambah Siswa (Hidden by default) -->
-                        <div id="form-container-siswa" class="hidden bg-gray-50 p-3 rounded-lg mb-4 border border-gray-200">
-                            <h3 class="text-base font-medium mb-2">Tambah Siswa Baru</h3>
-                            <form id="form-siswa" class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">NIS</label>
-                                    <input type="text" id="nis" class="w-full px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Nama Siswa</label>
-                                    <input type="text" id="nama" class="w-full px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Jenis Kelamin</label>
-                                    <select id="jenis-kelamin" class="w-full px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
-                                        <option value="">Pilih Jenis Kelamin</option>
-                                        <option value="Laki-laki">Laki-laki</option>
-                                        <option value="Perempuan">Perempuan</option>
-                                    </select>
-                                </div>
-                                <div class="md:col-span-3 flex space-x-2">
-                                    <button type="submit" class="btn-primary px-4 py-1.5 rounded-md font-medium text-sm">Simpan</button>
-                                    <button type="button" id="btn-batal-siswa" class="px-4 py-1.5 bg-gray-300 text-gray-700 rounded-md font-medium hover:bg-gray-400 text-sm">Batal</button>
-                                </div>
-                            </form>
-                        </div>
+                    </form>
+                </div>
+                
+                <!-- Tabel Siswa -->
+                <div class="table-container overflow-x-auto bg-white rounded-lg max-w-4xl mx-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">NIS</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Siswa</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis Kelamin</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabel-siswa" class="bg-white divide-y divide-gray-200">
+                            <!-- Data siswa akan ditampilkan di sini -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
 
-                        <div class="table-container overflow-x-auto">
-                            <table class="min-w-full bg-white border border-gray-200 compact-table">
-                                <thead>
-                                    <tr class="bg-gray-100">
-                                        <th class="border-b text-left">No</th>
-                                        <th class="border-b text-left">NIS</th>
-                                        <th class="border-b text-left">Nama Siswa</th>
-                                        <th class="border-b text-left">Jenis Kelamin</th>
-                                        <th class="border-b text-left">Aksi</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="daftar-siswa">
-                                    <!-- Data siswa akan ditampilkan di sini -->
-                                </tbody>
-                            </table>
+            <!-- Tab Content: Kehadiran -->
+            <div id="content-kehadiran" class="tab-content bg-white rounded-lg p-6 shadow-sm">
+                <h2 class="text-2xl font-bold mb-6">Input Kehadiran</h2>
+                
+                <!-- Form Kehadiran -->
+                <div class="mb-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal</label>
+                            <input type="date" id="tanggal-kehadiran" class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                        </div>
+                        <div class="flex items-end">
+                            <button id="hadir-semua" class="btn-primary bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                </svg>
+                                Hadir Semua
+                            </button>
                         </div>
                     </div>
                 </div>
+                
+                <!-- Tabel Kehadiran -->
+                <div class="table-container overflow-x-auto bg-white rounded-lg max-w-4xl mx-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">NIS</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Siswa</th>
+                                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Status Kehadiran</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Keterangan</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabel-kehadiran" class="bg-white divide-y divide-gray-200">
+                            <!-- Data kehadiran akan ditampilkan di sini -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="mt-6 text-center">
+                    <button id="simpan-kehadiran" class="btn-primary bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                        Simpan Kehadiran
+                    </button>
+                </div>
+            </div>
 
-                <div class="tab-content" id="kehadiran">
-                    <div class="bg-white rounded-lg shadow-md p-4 mb-6">
-                        <h2 class="text-lg font-semibold mb-3">Input Kehadiran</h2>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal</label>
-                                <input type="date" id="tanggal-kehadiran" class="w-full px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
-                            </div>
+            <!-- Tab Content: Rekap Kehadiran -->
+            <div id="content-rekap" class="tab-content bg-white rounded-lg p-6 shadow-sm">
+                <h2 class="text-2xl font-bold mb-6">Rekap Kehadiran</h2>
+                
+                <!-- Filter Tanggal -->
+                <div class="mb-6 bg-blue-50 p-6 rounded-lg">
+                    <h3 class="text-lg font-semibold mb-4">Filter Periode</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Awal</label>
+                            <input type="date" id="tanggal-awal" class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                         </div>
-                        
-                        <div class="table-container overflow-x-auto mt-3">
-                            <table class="min-w-full bg-white border border-gray-200">
-                                <thead>
-                                    <tr class="bg-gray-100">
-                                        <th class="py-2 px-3 border-b text-left text-sm">No</th>
-                                        <th class="py-2 px-3 border-b text-left text-sm">NIS</th>
-                                        <th class="py-2 px-3 border-b text-left text-sm">Nama Siswa</th>
-                                        <th class="py-2 px-3 border-b text-left text-sm">Status Kehadiran</th>
-                                        <th class="py-2 px-3 border-b text-left text-sm">Keterangan</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="daftar-kehadiran">
-                                    <!-- Data kehadiran akan ditampilkan di sini -->
-                                </tbody>
-                            </table>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Akhir</label>
+                            <input type="date" id="tanggal-akhir" class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                         </div>
-                        
-                        <div class="mt-4">
-                            <button id="simpan-kehadiran" class="btn-primary px-4 py-1.5 rounded-md font-medium text-sm">Simpan Kehadiran</button>
+                        <div class="flex items-end">
+                            <button id="generate-rekap" class="btn-primary bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                                Generate Rekap
+                            </button>
                         </div>
                     </div>
                 </div>
-
-                <div class="tab-content" id="rekap">
-                    <div class="bg-white rounded-lg shadow-md p-4 mb-6">
-                        <h2 class="text-lg font-semibold mb-3">Rekap Kehadiran</h2>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Awal</label>
-                                <input type="date" id="tanggal-awal" class="w-full px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
+                
+                <!-- Tombol Export -->
+                <div id="export-buttons" class="mb-6 hidden">
+                    <div class="flex space-x-4">
+                        <button id="export-excel" class="btn-primary bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                            </svg>
+                            Export Excel
+                        </button>
+                        <button id="export-pdf" class="btn-primary bg-red-600 text-white px-6 py-2 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                            </svg>
+                            Cetak PDF
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Hasil Rekap -->
+                <div id="hasil-rekap" class="hidden">
+                    <div class="table-container overflow-x-auto bg-white rounded-lg mb-6 max-w-4xl mx-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">NIS</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Siswa</th>
+                                    <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabel-rekap" class="bg-white divide-y divide-gray-200">
+                                <!-- Data rekap akan ditampilkan di sini -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="bg-blue-50 p-4 rounded-lg max-w-4xl mx-auto">
+                        <h4 class="font-medium mb-2">Keterangan:</h4>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+                            <div class="flex items-center">
+                                <span class="inline-block w-6 h-6 bg-green-100 text-green-800 text-center font-medium rounded mr-2">H</span>
+                                <span>Hadir</span>
                             </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Akhir</label>
-                                <input type="date" id="tanggal-akhir" class="w-full px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
+                            <div class="flex items-center">
+                                <span class="inline-block w-6 h-6 bg-yellow-100 text-yellow-800 text-center font-medium rounded mr-2">I</span>
+                                <span>Izin</span>
                             </div>
-                            <div class="flex items-end">
-                                <button id="generate-rekap" class="btn-primary px-4 py-1.5 rounded-md font-medium text-sm">Generate Rekap</button>
+                            <div class="flex items-center">
+                                <span class="inline-block w-6 h-6 bg-blue-100 text-blue-800 text-center font-medium rounded mr-2">S</span>
+                                <span>Sakit</span>
                             </div>
-                        </div>
-                        
-                        <div id="rekap-container" class="hidden mt-4">
-                            <div class="flex space-x-2 mb-3">
-                                <button id="export-excel" class="btn-success px-4 py-1.5 rounded-md font-medium text-sm">
-                                    <i class="fas fa-file-excel mr-2"></i> Export Excel
-                                </button>
-                                <button id="export-pdf-all" class="btn-danger px-4 py-1.5 rounded-md font-medium text-sm">
-                                    <i class="fas fa-file-pdf mr-2"></i> Cetak PDF
-                                </button>
-                            </div>
-                            
-                            <div class="table-container overflow-x-auto">
-                                <table class="min-w-full bg-white border border-gray-200 compact-table">
-                                    <thead>
-                                        <tr class="bg-gray-100">
-                                            <th class="border-b text-left">No</th>
-                                            <th class="border-b text-left">NIS</th>
-                                            <th class="border-b text-left">Nama Siswa</th>
-                                            <th class="border-b text-center">Aksi</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="rekap-kehadiran">
-                                        <!-- Data rekap kehadiran akan ditampilkan di sini -->
-                                    </tbody>
-                                </table>
+                            <div class="flex items-center">
+                                <span class="inline-block w-6 h-6 bg-red-100 text-red-800 text-center font-medium rounded mr-2">A</span>
+                                <span>Alpha</span>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </main>
 
         <!-- Footer -->
-       <!-- <footer class="footer">
-            <div class="container mx-auto px-4">
-                <p><i class="far fa-copyright mr-1"></i> 2025 Sistem Kehadiran Siswa</p>
+        <footer class="bg-gray-800 text-white p-4 mt-auto">
+            <div class="container mx-auto text-center">
+                <p>Sistem Kehadiran Siswa Kelas 8B &copy; 2025</p>
             </div>
-        </footer>-->
+        </footer>
     </div>
 
-    <!-- Modal Detail Kehadiran -->
-    <div id="modal-detail" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2 class="text-lg font-semibold mb-3" id="modal-title">Detail Kehadiran Siswa</h2>
-            
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
-                <div class="bg-green-50 p-2 rounded-md">
-                    <span class="block text-sm font-medium">Total Hadir:</span>
-                    <span id="total-hadir" class="text-green-600 font-bold">0</span>
-                </div>
-                <div class="bg-yellow-50 p-2 rounded-md">
-                    <span class="block text-sm font-medium">Total Ijin:</span>
-                    <span id="total-ijin" class="text-yellow-600 font-bold">0</span>
-                </div>
-                <div class="bg-blue-50 p-2 rounded-md">
-                    <span class="block text-sm font-medium">Total Sakit:</span>
-                    <span id="total-sakit" class="text-blue-600 font-bold">0</span>
-                </div>
-                <div class="bg-red-50 p-2 rounded-md">
-                    <span class="block text-sm font-medium">Total Alpha:</span>
-                    <span id="total-alpha" class="text-red-600 font-bold">0</span>
-                </div>
+    <!-- Modal untuk detail kehadiran -->
+    <div id="detail-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold" id="modal-title">Detail Kehadiran</h3>
+                <button id="close-modal" class="text-gray-500 hover:text-gray-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
             </div>
-            
-            <div class="table-container overflow-x-auto mt-3">
-                <table class="min-w-full bg-white border border-gray-200 compact-table">
-                    <thead>
-                        <tr class="bg-gray-100">
-                            <th class="border-b text-left">Tanggal</th>
-                            <th class="border-b text-left">Status</th>
-                            <th class="border-b text-left">Keterangan</th>
-                        </tr>
-                    </thead>
-                    <tbody id="detail-kehadiran">
-                        <!-- Detail kehadiran akan ditampilkan di sini -->
-                    </tbody>
-                </table>
-            </div>
+            <div id="modal-content"></div>
         </div>
     </div>
 
-    <!-- Modal Konfirmasi Hapus -->
-    <div id="modal-konfirmasi" class="modal">
-        <div class="modal-content max-w-md">
-            <span class="close">&times;</span>
-            <div class="text-center">
-                <i class="fas fa-exclamation-triangle text-yellow-500 text-5xl mb-4"></i>
-                <h2 class="text-xl font-semibold mb-2">Peringatan!</h2>
-                <p class="mb-6" id="konfirmasi-text">Apakah Anda yakin ingin menghapus siswa ini?</p>
-                <div class="flex justify-center space-x-4">
-                    <button id="btn-batal-hapus" class="px-4 py-1.5 bg-gray-300 text-gray-700 rounded-md font-medium hover:bg-gray-400 text-sm">Batal</button>
-                    <button id="btn-konfirmasi-hapus" class="btn-danger px-4 py-1.5 rounded-md font-medium text-sm">Hapus</button>
-                </div>
-            </div>
+    <!-- Notifikasi -->
+    <div id="notification" class="fixed top-4 right-4 bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded shadow-md transition-opacity duration-500 opacity-0 hidden">
+        <div class="flex items-center">
+            <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+            <span id="notification-message">Notifikasi</span>
         </div>
-    </div>
-    
-    <!-- Modal Konfirmasi Cetak -->
-    <div id="modal-konfirmasi-cetak" class="modal">
-        <div class="modal-content max-w-md">
-            <span class="close">&times;</span>
-            <div class="text-center">
-                <i class="fas fa-file-pdf text-blue-500 text-5xl mb-4"></i>
-                <h2 class="text-xl font-semibold mb-2">Cetak Rekap Kehadiran</h2>
-                <p class="mb-6" id="konfirmasi-cetak-text">Apakah Anda yakin ingin mencetak rekap kehadiran siswa ini?</p>
-                <div class="flex justify-center space-x-4">
-                    <button id="btn-batal-cetak" class="px-4 py-1.5 bg-gray-300 text-gray-700 rounded-md font-medium hover:bg-gray-400 text-sm">Batal</button>
-                    <button id="btn-konfirmasi-cetak" class="btn-primary px-4 py-1.5 rounded-md font-medium text-sm">Cetak PDF</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Modal Konfirmasi Export Excel -->
-    <div id="modal-konfirmasi-excel" class="modal">
-        <div class="modal-content max-w-md">
-            <span class="close">&times;</span>
-            <div class="text-center">
-                <i class="fas fa-file-excel text-green-500 text-5xl mb-4"></i>
-                <h2 class="text-xl font-semibold mb-2">Export Excel</h2>
-                <p class="mb-6">Apakah Anda yakin ingin mengexport data kehadiran ke Excel?</p>
-                <div class="flex justify-center space-x-4">
-                    <button id="btn-batal-excel" class="px-4 py-1.5 bg-gray-300 text-gray-700 rounded-md font-medium hover:bg-gray-400 text-sm">Batal</button>
-                    <button id="btn-konfirmasi-excel" class="btn-success px-4 py-1.5 rounded-md font-medium text-sm">Export Excel</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Modal Konfirmasi Export PDF All -->
-    <div id="modal-konfirmasi-pdf-all" class="modal">
-        <div class="modal-content max-w-md">
-            <span class="close">&times;</span>
-            <div class="text-center">
-                <i class="fas fa-file-pdf text-red-500 text-5xl mb-4"></i>
-                <h2 class="text-xl font-semibold mb-2">Cetak PDF Rekap</h2>
-                <p class="mb-6">Apakah Anda yakin ingin mencetak rekap kehadiran semua siswa?</p>
-                <div class="flex justify-center space-x-4">
-                    <button id="btn-batal-pdf-all" class="px-4 py-1.5 bg-gray-300 text-gray-700 rounded-md font-medium hover:bg-gray-400 text-sm">Batal</button>
-                    <button id="btn-konfirmasi-pdf-all" class="btn-danger px-4 py-1.5 rounded-md font-medium text-sm">Cetak PDF</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Print Container (Hidden by default) -->
-    <div id="print-container">
-        <!-- Content will be dynamically generated -->
     </div>
 
     <script>
-        // Initialize jsPDF
-        window.jsPDF = window.jspdf.jsPDF;
-        
-        // Data storage
+        // Data Storage
         let dataSiswa = JSON.parse(localStorage.getItem('dataSiswa')) || [];
         let dataKehadiran = JSON.parse(localStorage.getItem('dataKehadiran')) || [];
-        let siswaToDelete = null;
-        let siswaToCetak = null;
-        let currentTanggalAwal = '';
-        let currentTanggalAkhir = '';
         
-        // Session management variables
-        let isLoggedIn = false;
-        let sessionTimeout = 5 * 60 * 1000; // 5 minutes in milliseconds
-        let inactivityTimer;
-        let warningTimer;
-        let warningDuration = 30; // 30 seconds warning before logout
-        let warningCountdown;
-        let lastActivity = Date.now();
-        
-        // Login functionality
-        const loginForm = document.getElementById('login-form');
-        const loginScreen = document.getElementById('login-screen');
-        const appContainer = document.getElementById('app-container');
-        const loginError = document.getElementById('login-error');
-        const timeoutModal = document.getElementById('timeout-modal');
-        const timeoutCountdown = document.getElementById('timeout-countdown');
-        
-        // Check for user activity
-        const activityEvents = ['mousedown', 'mousemove', 'keypress', 'scroll', 'refresh', 'touchstart'];
-        
-        activityEvents.forEach(event => {
-            document.addEventListener(event, resetInactivityTimer);
-        });
-        
-        function resetInactivityTimer() {
-            lastActivity = Date.now();
-            
-            // Clear existing timers
-            clearTimeout(inactivityTimer);
-            clearTimeout(warningTimer);
-            
-            // Hide timeout warning if it's showing
-            if (timeoutModal.style.display === 'block') {
-                hideTimeoutWarning();
-            }
-            
-            // Only set new timers if logged in
-            if (isLoggedIn) {
-                // Set timer for showing warning
-                warningTimer = setTimeout(() => {
-                    showTimeoutWarning();
-                }, sessionTimeout - (warningDuration * 1000));
-                
-                // Set timer for actual logout
-                inactivityTimer = setTimeout(() => {
-                    logout();
-                }, sessionTimeout);
-            }
-        }
-        
-        function showTimeoutWarning() {
-            timeoutModal.style.display = 'block';
-            let secondsLeft = warningDuration;
-            timeoutCountdown.textContent = secondsLeft;
-            
-            warningCountdown = setInterval(() => {
-                secondsLeft--;
-                timeoutCountdown.textContent = secondsLeft;
-                
-                if (secondsLeft <= 0) {
-                    clearInterval(warningCountdown);
-                }
-            }, 1000);
-        }
-        
-        function hideTimeoutWarning() {
-            timeoutModal.style.display = 'none';
-            clearInterval(warningCountdown);
-        }
-        
-        // Stay logged in button
-        document.getElementById('btn-stay-logged-in').addEventListener('click', function() {
-            hideTimeoutWarning();
-            resetInactivityTimer();
-        });
-        
-        // Logout now button
-        document.getElementById('btn-logout-now').addEventListener('click', function() {
-            hideTimeoutWarning();
-            logout();
-        });
-        
-        loginForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            
-            // Authentication with the new credentials
-            if (username === 'admin' && password === '1122') {
-                // Login successful
-                login();
-            } else {
-                // Login failed
-                loginError.textContent = 'Username atau password salah!';
-                loginError.classList.remove('hidden');
-            }
-        });
-        
-        function login() {
-            isLoggedIn = true;
-            showApp();
-            resetInactivityTimer();
-        }
-        
-        function logout() {
-            isLoggedIn = false;
-            clearTimeout(inactivityTimer);
-            clearTimeout(warningTimer);
-            clearInterval(warningCountdown);
-            hideTimeoutWarning();
-            showLogin();
-        }
-        
-        function showApp() {
-            loginScreen.style.display = 'none';
-            appContainer.style.display = 'block';
-            renderSiswaTable();
-        }
-        
-        function showLogin() {
-            loginScreen.style.display = 'flex';
-            appContainer.style.display = 'none';
-            loginForm.reset();
-            loginError.classList.add('hidden');
-        }
-        
-        // Tab functionality
-        const tabBtns = document.querySelectorAll('.tab-btn');
+        // Tab Navigation
+        const tabButtons = document.querySelectorAll('.tab-btn');
         const tabContents = document.querySelectorAll('.tab-content');
         
-        tabBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                const tabId = btn.getAttribute('data-tab');
+        tabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const tabId = button.id.replace('tab-', '');
                 
-                tabBtns.forEach(b => b.classList.remove('tab-active'));
-                tabContents.forEach(c => c.classList.remove('active'));
+                // Update active tab button
+                tabButtons.forEach(btn => {
+                    if (btn === button) {
+                        btn.classList.add('text-blue-600', 'border-b-2', 'border-blue-600');
+                        btn.classList.remove('text-gray-500');
+                    } else {
+                        btn.classList.remove('text-blue-600', 'border-b-2', 'border-blue-600');
+                        btn.classList.add('text-gray-500');
+                    }
+                });
                 
-                btn.classList.add('tab-active');
-                document.getElementById(tabId).classList.add('active');
+                // Show active tab content
+                tabContents.forEach(content => {
+                    if (content.id === `content-${tabId}`) {
+                        content.classList.add('active');
+                    } else {
+                        content.classList.remove('active');
+                    }
+                });
                 
+                // Load data for specific tabs
                 if (tabId === 'kehadiran') {
-                    renderKehadiranTable();
+                    loadKehadiranForm();
+                } else if (tabId === 'rekap') {
+                    document.getElementById('export-buttons').classList.add('hidden');
+                    document.getElementById('hasil-rekap').classList.add('hidden');
                 }
             });
         });
         
-        // Toggle Form Siswa
-        document.getElementById('btn-tambah-siswa').addEventListener('click', function() {
-            document.getElementById('form-container-siswa').classList.remove('hidden');
-            this.classList.add('hidden');
-        });
+        // Fungsi untuk menampilkan notifikasi
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            const notificationMessage = document.getElementById('notification-message');
+            
+            // Set pesan
+            notificationMessage.textContent = message;
+            
+            // Set warna berdasarkan tipe
+            if (type === 'success') {
+                notification.className = 'fixed top-4 right-4 bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded shadow-md transition-opacity duration-500';
+            } else if (type === 'warning') {
+                notification.className = 'fixed top-4 right-4 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded shadow-md transition-opacity duration-500';
+            } else if (type === 'error') {
+                notification.className = 'fixed top-4 right-4 bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded shadow-md transition-opacity duration-500';
+            }
+            
+            // Tampilkan notifikasi
+            notification.classList.remove('hidden');
+            setTimeout(() => {
+                notification.classList.remove('opacity-0');
+            }, 10);
+            
+            // Hilangkan notifikasi setelah 3 detik
+            setTimeout(() => {
+                notification.classList.add('opacity-0');
+                setTimeout(() => {
+                    notification.classList.add('hidden');
+                }, 500);
+            }, 3000);
+        }
         
-        document.getElementById('btn-batal-siswa').addEventListener('click', function() {
-            document.getElementById('form-container-siswa').classList.add('hidden');
-            document.getElementById('btn-tambah-siswa').classList.remove('hidden');
-            document.getElementById('form-siswa').reset();
-        });
-        
-        // Form Siswa
-        const formSiswa = document.getElementById('form-siswa');
-        formSiswa.addEventListener('submit', function(e) {
+        // Form Tambah Siswa
+        document.getElementById('form-siswa').addEventListener('submit', function(e) {
             e.preventDefault();
             
             const nis = document.getElementById('nis').value;
             const nama = document.getElementById('nama').value;
             const jenisKelamin = document.getElementById('jenis-kelamin').value;
             
-            // Check if NIS already exists
+            // Validasi NIS unik
             if (dataSiswa.some(siswa => siswa.nis === nis)) {
-                alert('NIS sudah terdaftar!');
+                showNotification('NIS sudah terdaftar. Gunakan NIS lain.', 'error');
                 return;
             }
             
+            // Tambah siswa baru
             dataSiswa.push({
                 nis,
                 nama,
                 jenisKelamin
             });
             
+            // Simpan ke localStorage
             localStorage.setItem('dataSiswa', JSON.stringify(dataSiswa));
-            renderSiswaTable();
             
-            // Reset form and hide it
-            formSiswa.reset();
-            document.getElementById('form-container-siswa').classList.add('hidden');
-            document.getElementById('btn-tambah-siswa').classList.remove('hidden');
+            // Reset form dan refresh tabel
+            this.reset();
+            loadTabelSiswa();
+            
+            showNotification('Data siswa berhasil ditambahkan!');
         });
         
-        // Render Siswa Table
-        function renderSiswaTable() {
-            const daftarSiswa = document.getElementById('daftar-siswa');
-            daftarSiswa.innerHTML = '';
+        // Load Tabel Siswa
+        function loadTabelSiswa() {
+            const tabelSiswa = document.getElementById('tabel-siswa');
+            tabelSiswa.innerHTML = '';
             
             if (dataSiswa.length === 0) {
-                daftarSiswa.innerHTML = `
-                    <tr>
-                        <td colspan="5" class="py-3 px-3 text-center text-gray-500">Belum ada data siswa</td>
-                    </tr>
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td colspan="5" class="px-4 py-4 text-center text-gray-500">
+                        Belum ada data siswa. Silakan tambahkan siswa baru.
+                    </td>
                 `;
+                tabelSiswa.appendChild(row);
                 return;
             }
             
             dataSiswa.forEach((siswa, index) => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td class="border-b">${index + 1}</td>
-                    <td class="border-b">${siswa.nis}</td>
-                    <td class="border-b">${siswa.nama}</td>
-                    <td class="border-b">${siswa.jenisKelamin}</td>
-                    <td class="border-b">
-                        <button class="btn-danger compact-btn rounded-md" onclick="showDeleteConfirmation('${siswa.nis}', '${siswa.nama}')">
-                            <i class="fas fa-trash-alt"></i> Hapus
+                    <td class="px-4 py-4 whitespace-nowrap">${index + 1}</td>
+                    <td class="px-4 py-4 whitespace-nowrap">${siswa.nis}</td>
+                    <td class="px-4 py-4 whitespace-nowrap">${siswa.nama}</td>
+                    <td class="px-4 py-4 whitespace-nowrap">${siswa.jenisKelamin}</td>
+                    <td class="px-4 py-4 whitespace-nowrap">
+                        <button class="hapus-siswa text-white bg-red-500 hover:bg-red-600 px-3 py-1 rounded-md text-sm" data-nis="${siswa.nis}">
+                            Hapus
                         </button>
                     </td>
                 `;
-                daftarSiswa.appendChild(row);
+                tabelSiswa.appendChild(row);
             });
-        }
-        
-        // Show Delete Confirmation
-        function showDeleteConfirmation(nis, nama) {
-            siswaToDelete = nis;
-            document.getElementById('konfirmasi-text').textContent = `Apakah Anda yakin ingin menghapus siswa "${nama}" (${nis})?`;
-            document.getElementById('modal-konfirmasi').style.display = 'block';
-        }
-        
-        // Show Print Confirmation
-        function showPrintConfirmation(nis, nama, tanggalAwal, tanggalAkhir) {
-            siswaToCetak = {
-                nis,
-                nama,
-                tanggalAwal,
-                tanggalAkhir
-            };
-            document.getElementById('konfirmasi-cetak-text').textContent = `Apakah Anda yakin ingin mencetak rekap kehadiran untuk siswa "${nama}"?`;
-            document.getElementById('modal-konfirmasi-cetak').style.display = 'block';
+            
+            // Event listener untuk tombol hapus
+            document.querySelectorAll('.hapus-siswa').forEach(button => {
+                button.addEventListener('click', function() {
+                    const nis = this.getAttribute('data-nis');
+                    hapusSiswa(nis);
+                });
+            });
         }
         
         // Hapus Siswa
         function hapusSiswa(nis) {
-            dataSiswa = dataSiswa.filter(siswa => siswa.nis !== nis);
-            // Also remove attendance data for this student
-            dataKehadiran = dataKehadiran.filter(k => k.nis !== nis);
-            
-            localStorage.setItem('dataSiswa', JSON.stringify(dataSiswa));
-            localStorage.setItem('dataKehadiran', JSON.stringify(dataKehadiran));
-            renderSiswaTable();
+            const siswa = dataSiswa.find(s => s.nis === nis);
+            if (confirm(`Peringatan: Anda akan menghapus data siswa ${siswa.nama} (${siswa.nis}). Semua data kehadiran siswa ini juga akan dihapus. Apakah Anda yakin?`)) {
+                dataSiswa = dataSiswa.filter(siswa => siswa.nis !== nis);
+                localStorage.setItem('dataSiswa', JSON.stringify(dataSiswa));
+                
+                // Hapus juga data kehadiran siswa tersebut
+                dataKehadiran = dataKehadiran.filter(kehadiran => kehadiran.nis !== nis);
+                localStorage.setItem('dataKehadiran', JSON.stringify(dataKehadiran));
+                
+                loadTabelSiswa();
+                showNotification('Data siswa berhasil dihapus!');
+            }
         }
         
-        // Render Kehadiran Table
-        function renderKehadiranTable() {
-            const tanggalKehadiran = document.getElementById('tanggal-kehadiran');
-            const daftarKehadiran = document.getElementById('daftar-kehadiran');
+        // Load Form Kehadiran
+        function loadKehadiranForm() {
+            const tanggalInput = document.getElementById('tanggal-kehadiran');
+            const today = new Date().toISOString().split('T')[0];
+            tanggalInput.value = today;
             
-            // Set default date to today if not set
-            if (!tanggalKehadiran.value) {
-                const today = new Date();
-                const year = today.getFullYear();
-                const month = String(today.getMonth() + 1).padStart(2, '0');
-                const day = String(today.getDate()).padStart(2, '0');
-                tanggalKehadiran.value = `${year}-${month}-${day}`;
-            }
+            tanggalInput.addEventListener('change', function() {
+                loadTabelKehadiran(this.value);
+            });
             
-            daftarKehadiran.innerHTML = '';
+            loadTabelKehadiran(today);
+        }
+        
+        // Load Tabel Kehadiran
+        function loadTabelKehadiran(tanggal) {
+            const tabelKehadiran = document.getElementById('tabel-kehadiran');
+            tabelKehadiran.innerHTML = '';
             
             if (dataSiswa.length === 0) {
-                daftarKehadiran.innerHTML = `
-                    <tr>
-                        <td colspan="5" class="py-4 px-4 text-center text-gray-500">Belum ada data siswa</td>
-                    </tr>
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td colspan="5" class="px-4 py-4 text-center text-gray-500">
+                        Belum ada data siswa. Silakan tambahkan siswa terlebih dahulu.
+                    </td>
                 `;
+                tabelKehadiran.appendChild(row);
                 return;
             }
             
-            const tanggal = tanggalKehadiran.value;
-            
             dataSiswa.forEach((siswa, index) => {
-                // Check if attendance data exists for this student on this date
-                const existingData = dataKehadiran.find(k => 
-                    k.nis === siswa.nis && k.tanggal === tanggal
-                );
-                
-                const status = existingData ? existingData.status : '';
-                const keterangan = existingData ? existingData.keterangan : '';
+                // Cek apakah sudah ada data kehadiran untuk siswa pada tanggal tersebut
+                const kehadiran = dataKehadiran.find(k => k.nis === siswa.nis && k.tanggal === tanggal);
                 
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td class="py-2 px-3 border-b text-sm">${index + 1}</td>
-                    <td class="py-2 px-3 border-b text-sm">${siswa.nis}</td>
-                    <td class="py-2 px-3 border-b text-sm">${siswa.nama}</td>
-                    <td class="py-2 px-3 border-b">
-                        <div class="flex space-x-2">
-                            <div class="attendance-option p-1 rounded-md border text-center ${status === 'H' ? 'selected' : ''}" 
-                                 data-nis="${siswa.nis}" data-status="H">
-                                <div class="status-icon text-green-600">✓</div>
-                                <span class="block text-center text-xs font-medium">Hadir</span>
+                    <td class="px-4 py-4 whitespace-nowrap">${index + 1}</td>
+                    <td class="px-4 py-4 whitespace-nowrap">${siswa.nis}</td>
+                    <td class="px-4 py-4 whitespace-nowrap">${siswa.nama}</td>
+                    <td class="px-4 py-4">
+                        <div class="flex justify-center space-x-4">
+                            <div class="text-center">
+                                <label class="cursor-pointer">
+                                    <input type="radio" name="status-${siswa.nis}" value="hadir" class="status-kehadiran hidden" data-nis="${siswa.nis}" ${kehadiran && kehadiran.status === 'hadir' ? 'checked' : ''}>
+                                    <div class="status-icon bg-green-100 text-green-800 ${kehadiran && kehadiran.status === 'hadir' ? 'ring-2 ring-green-500' : ''}">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                        </svg>
+                                    </div>
+                                    <span class="status-label">Hadir</span>
+                                </label>
                             </div>
-                            <div class="attendance-option p-1 rounded-md border text-center ${status === 'I' ? 'selected' : ''}" 
-                                 data-nis="${siswa.nis}" data-status="I">
-                                <div class="status-icon text-yellow-600">📝</div>
-                                <span class="block text-center text-xs font-medium">Ijin</span>
+                            <div class="text-center">
+                                <label class="cursor-pointer">
+                                    <input type="radio" name="status-${siswa.nis}" value="izin" class="status-kehadiran hidden" data-nis="${siswa.nis}" ${kehadiran && kehadiran.status === 'izin' ? 'checked' : ''}>
+                                    <div class="status-icon bg-yellow-100 text-yellow-800 ${kehadiran && kehadiran.status === 'izin' ? 'ring-2 ring-yellow-500' : ''}">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                        </svg>
+                                    </div>
+                                    <span class="status-label">Izin</span>
+                                </label>
                             </div>
-                            <div class="attendance-option p-1 rounded-md border text-center ${status === 'S' ? 'selected' : ''}" 
-                                 data-nis="${siswa.nis}" data-status="S">
-                                <div class="status-icon text-blue-600">🤒</div>
-                                <span class="block text-center text-xs font-medium">Sakit</span>
+                            <div class="text-center">
+                                <label class="cursor-pointer">
+                                    <input type="radio" name="status-${siswa.nis}" value="sakit" class="status-kehadiran hidden" data-nis="${siswa.nis}" ${kehadiran && kehadiran.status === 'sakit' ? 'checked' : ''}>
+                                    <div class="status-icon bg-blue-100 text-blue-800 ${kehadiran && kehadiran.status === 'sakit' ? 'ring-2 ring-blue-500' : ''}">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                        </svg>
+                                    </div>
+                                    <span class="status-label">Sakit</span>
+                                </label>
                             </div>
-                            <div class="attendance-option p-1 rounded-md border text-center ${status === 'A' ? 'selected' : ''}" 
-                                 data-nis="${siswa.nis}" data-status="A">
-                                <div class="status-icon text-red-600">❌</div>
-                                <span class="block text-center text-xs font-medium">Alpha</span>
+                            <div class="text-center">
+                                <label class="cursor-pointer">
+                                    <input type="radio" name="status-${siswa.nis}" value="alpha" class="status-kehadiran hidden" data-nis="${siswa.nis}" ${kehadiran && kehadiran.status === 'alpha' ? 'checked' : ''}>
+                                    <div class="status-icon bg-red-100 text-red-800 ${kehadiran && kehadiran.status === 'alpha' ? 'ring-2 ring-red-500' : ''}">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    </div>
+                                    <span class="status-label">Alpha</span>
+                                </label>
                             </div>
                         </div>
                     </td>
-                    <td class="py-2 px-3 border-b">
-                        <input type="text" class="keterangan-input w-full px-2 py-1 text-sm border border-gray-300 rounded-md" 
-                               data-nis="${siswa.nis}" value="${keterangan}">
+                    <td class="px-4 py-4 whitespace-nowrap">
+                        <input type="text" class="keterangan w-full px-3 py-2 border rounded-md" data-nis="${siswa.nis}" value="${kehadiran ? kehadiran.keterangan || '' : ''}">
                     </td>
                 `;
-                daftarKehadiran.appendChild(row);
+                tabelKehadiran.appendChild(row);
             });
             
-            // Add event listeners to attendance options
-            document.querySelectorAll('.attendance-option').forEach(option => {
-                option.addEventListener('click', function() {
-                    const nis = this.getAttribute('data-nis');
-                    const status = this.getAttribute('data-status');
-                    
-                    // Remove selected class from all options in the same row
-                    const row = this.closest('tr');
-                    row.querySelectorAll('.attendance-option').forEach(opt => {
-                        opt.classList.remove('selected');
+            // Event listener untuk radio buttons
+            document.querySelectorAll('.status-kehadiran').forEach(radio => {
+                radio.addEventListener('change', function() {
+                    // Hapus ring dari semua icon dalam grup yang sama
+                    const name = this.getAttribute('name');
+                    document.querySelectorAll(`input[name="${name}"]`).forEach(input => {
+                        const icon = input.nextElementSibling;
+                        if (input.checked) {
+                            icon.classList.add('ring-2');
+                            if (input.value === 'hadir') icon.classList.add('ring-green-500');
+                            if (input.value === 'izin') icon.classList.add('ring-yellow-500');
+                            if (input.value === 'sakit') icon.classList.add('ring-blue-500');
+                            if (input.value === 'alpha') icon.classList.add('ring-red-500');
+                        } else {
+                            icon.classList.remove('ring-2', 'ring-green-500', 'ring-yellow-500', 'ring-blue-500', 'ring-red-500');
+                        }
                     });
-                    
-                    // Add selected class to clicked option
-                    this.classList.add('selected');
                 });
             });
         }
         
-        // Save Attendance
-        document.getElementById('simpan-kehadiran').addEventListener('click', function() {
-            const tanggal = document.getElementById('tanggal-kehadiran').value;
+        // Fungsi untuk menandai semua siswa hadir
+        document.getElementById('hadir-semua').addEventListener('click', function() {
+            const radioButtons = document.querySelectorAll('input[value="hadir"]');
             
-            if (!tanggal) {
-                alert('Pilih tanggal terlebih dahulu!');
-                return;
-            }
-            
-            const selectedOptions = document.querySelectorAll('.attendance-option.selected');
-            const keteranganInputs = document.querySelectorAll('.keterangan-input');
-            
-            // Remove existing attendance data for this date
-            dataKehadiran = dataKehadiran.filter(k => k.tanggal !== tanggal);
-            
-            // Add new attendance data
-            selectedOptions.forEach(option => {
-                const nis = option.getAttribute('data-nis');
-                const status = option.getAttribute('data-status');
-                const keteranganInput = Array.from(keteranganInputs).find(input => input.getAttribute('data-nis') === nis);
-                const keterangan = keteranganInput ? keteranganInput.value : '';
+            radioButtons.forEach(radio => {
+                radio.checked = true;
+                // Tambahkan ring ke icon
+                const icon = radio.nextElementSibling;
+                icon.classList.add('ring-2', 'ring-green-500');
                 
-                const siswa = dataSiswa.find(s => s.nis === nis);
-                
-                dataKehadiran.push({
-                    tanggal,
-                    nis,
-                    nama: siswa.nama,
-                    status,
-                    keterangan
+                // Hapus ring dari icon lain dalam grup yang sama
+                const name = radio.getAttribute('name');
+                document.querySelectorAll(`input[name="${name}"]:not([value="hadir"])`).forEach(input => {
+                    const otherIcon = input.nextElementSibling;
+                    otherIcon.classList.remove('ring-2', 'ring-yellow-500', 'ring-blue-500', 'ring-red-500');
                 });
             });
             
+            showNotification('Semua siswa ditandai hadir!');
+        });
+        
+        // Simpan Kehadiran
+        document.getElementById('simpan-kehadiran').addEventListener('click', function() {
+            const tanggal = document.getElementById('tanggal-kehadiran').value;
+            const keteranganElements = document.querySelectorAll('.keterangan');
+            
+            if (!tanggal) {
+                showNotification('Pilih tanggal terlebih dahulu!', 'error');
+                return;
+            }
+            
+            // Hapus data kehadiran yang sudah ada pada tanggal tersebut
+            dataKehadiran = dataKehadiran.filter(k => k.tanggal !== tanggal);
+            
+            // Tambahkan data kehadiran baru
+            dataSiswa.forEach(siswa => {
+                const checkedRadio = document.querySelector(`input[name="status-${siswa.nis}"]:checked`);
+                const keteranganElement = document.querySelector(`.keterangan[data-nis="${siswa.nis}"]`);
+                
+                if (checkedRadio) {
+                    const status = checkedRadio.value;
+                    const keterangan = keteranganElement ? keteranganElement.value : '';
+                    
+                    dataKehadiran.push({
+                        tanggal,
+                        nis: siswa.nis,
+                        status,
+                        keterangan
+                    });
+                } else {
+                    // Default ke alpha jika tidak ada yang dipilih
+                    dataKehadiran.push({
+                        tanggal,
+                        nis: siswa.nis,
+                        status: 'alpha',
+                        keterangan: keteranganElement ? keteranganElement.value : ''
+                    });
+                }
+            });
+            
+            // Simpan ke localStorage
             localStorage.setItem('dataKehadiran', JSON.stringify(dataKehadiran));
-            alert('Data kehadiran berhasil disimpan!');
+            
+            showNotification('Data kehadiran berhasil disimpan!');
         });
         
         // Generate Rekap
@@ -1051,684 +659,602 @@
             const tanggalAkhir = document.getElementById('tanggal-akhir').value;
             
             if (!tanggalAwal || !tanggalAkhir) {
-                alert('Pilih tanggal awal dan tanggal akhir terlebih dahulu!');
+                showNotification('Pilih tanggal awal dan tanggal akhir terlebih dahulu!', 'error');
                 return;
             }
             
-            if (tanggalAwal > tanggalAkhir) {
-                alert('Tanggal awal tidak boleh lebih besar dari tanggal akhir!');
+            if (new Date(tanggalAwal) > new Date(tanggalAkhir)) {
+                showNotification('Tanggal awal tidak boleh lebih besar dari tanggal akhir!', 'error');
                 return;
             }
             
-            currentTanggalAwal = tanggalAwal;
-            currentTanggalAkhir = tanggalAkhir;
+            generateRekap(tanggalAwal, tanggalAkhir);
+            document.getElementById('export-buttons').classList.remove('hidden');
+            document.getElementById('hasil-rekap').classList.remove('hidden');
             
-            renderRekapKehadiran(tanggalAwal, tanggalAkhir);
-            document.getElementById('rekap-container').classList.remove('hidden');
+            showNotification('Rekap kehadiran berhasil dibuat!');
         });
         
-        // Render Rekap Kehadiran
-        function renderRekapKehadiran(tanggalAwal, tanggalAkhir) {
-            const rekapKehadiran = document.getElementById('rekap-kehadiran');
-            rekapKehadiran.innerHTML = '';
+        // Generate Rekap Kehadiran
+        function generateRekap(tanggalAwal, tanggalAkhir) {
+            const tabelRekap = document.getElementById('tabel-rekap');
+            tabelRekap.innerHTML = '';
             
             if (dataSiswa.length === 0) {
-                rekapKehadiran.innerHTML = `
-                    <tr>
-                        <td colspan="4" class="py-3 px-3 text-center text-gray-500">Belum ada data siswa</td>
-                    </tr>
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td colspan="4" class="px-4 py-4 text-center text-gray-500">
+                        Belum ada data siswa.
+                    </td>
                 `;
+                tabelRekap.appendChild(row);
                 return;
             }
             
-            // Get all dates between tanggalAwal and tanggalAkhir
-            const dates = getDatesInRange(new Date(tanggalAwal), new Date(tanggalAkhir));
+            // Dapatkan semua tanggal dalam rentang
+            const tanggalList = getTanggalRange(tanggalAwal, tanggalAkhir);
             
             dataSiswa.forEach((siswa, index) => {
                 const row = document.createElement('tr');
                 
-                // Calculate attendance statistics for this student
+                // Hitung total kehadiran
                 let totalHadir = 0;
-                let totalIjin = 0;
+                let totalIzin = 0;
                 let totalSakit = 0;
                 let totalAlpha = 0;
                 
-                const detailKehadiran = [];
+                // Data kehadiran per tanggal
+                const kehadiranData = [];
                 
-                dates.forEach(date => {
-                    const formattedDate = formatDate(date);
-                    const kehadiran = dataKehadiran.find(k => 
-                        k.nis === siswa.nis && k.tanggal === formattedDate
-                    );
+                tanggalList.forEach(tanggal => {
+                    const kehadiran = dataKehadiran.find(k => k.nis === siswa.nis && k.tanggal === tanggal);
+                    let status = 'Alpha';
+                    let statusCode = 'A';
+                    let keterangan = '';
                     
                     if (kehadiran) {
-                        if (kehadiran.status === 'H') totalHadir++;
-                        else if (kehadiran.status === 'I') totalIjin++;
-                        else if (kehadiran.status === 'S') totalSakit++;
-                        else if (kehadiran.status === 'A') totalAlpha++;
+                        status = kehadiran.status.charAt(0).toUpperCase() + kehadiran.status.slice(1);
+                        keterangan = kehadiran.keterangan || '';
                         
-                        detailKehadiran.push({
-                            tanggal: formattedDate,
-                            status: kehadiran.status,
-                            keterangan: kehadiran.keterangan
-                        });
+                        if (kehadiran.status === 'hadir') {
+                            statusCode = 'H';
+                            totalHadir++;
+                        } else if (kehadiran.status === 'izin') {
+                            statusCode = 'I';
+                            totalIzin++;
+                        } else if (kehadiran.status === 'sakit') {
+                            statusCode = 'S';
+                            totalSakit++;
+                        } else if (kehadiran.status === 'alpha') {
+                            statusCode = 'A';
+                            totalAlpha++;
+                        }
+                    } else {
+                        totalAlpha++;
                     }
+                    
+                    const formattedTanggal = new Date(tanggal).toLocaleDateString('id-ID', {
+                        day: '2-digit',
+                        month: 'long',
+                        year: 'numeric'
+                    });
+                    
+                    kehadiranData.push({
+                        tanggal: formattedTanggal,
+                        rawTanggal: tanggal,
+                        status: status,
+                        statusCode: statusCode,
+                        keterangan: keterangan
+                    });
                 });
                 
+                // Simpan data untuk modal
+                const detailData = {
+                    nama: siswa.nama,
+                    nis: siswa.nis,
+                    totalHadir,
+                    totalIzin,
+                    totalSakit,
+                    totalAlpha,
+                    kehadiranData
+                };
+                
                 row.innerHTML = `
-                    <td class="border-b">${index + 1}</td>
-                    <td class="border-b">${siswa.nis}</td>
-                    <td class="border-b">${siswa.nama}</td>
-                    <td class="border-b text-center">
-                        <div class="flex justify-center space-x-2">
-                            <button class="btn-info compact-btn rounded-md" 
-                                    onclick="showDetailKehadiran('${siswa.nama}', ${totalHadir}, ${totalIjin}, ${totalSakit}, ${totalAlpha}, '${siswa.nis}', '${tanggalAwal}', '${tanggalAkhir}')">
-                                <i class="fas fa-info-circle"></i> Detail
-                            </button>
-                            <button class="btn-warning compact-btn rounded-md" 
-                                    onclick="showPrintConfirmation('${siswa.nis}', '${siswa.nama}', '${tanggalAwal}', '${tanggalAkhir}')">
-                                <i class="fas fa-print"></i> Cetak
-                            </button>
+                    <td class="px-4 py-4 whitespace-nowrap">${index + 1}</td>
+                    <td class="px-4 py-4 whitespace-nowrap">${siswa.nis}</td>
+                    <td class="px-4 py-4 whitespace-nowrap">${siswa.nama}</td>
+                    <td class="px-4 py-4 text-center">
+                        <div class="flex justify-center space-x-4">
+                            <div class="flex flex-col items-center">
+                                <button class="detail-btn bg-blue-100 text-blue-800 hover:bg-blue-200 p-2 rounded-full" data-siswa='${JSON.stringify(detailData)}'>
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                </button>
+                                <span class="text-xs text-gray-500 mt-1">Detail</span>
+                            </div>
+                            <div class="flex flex-col items-center">
+                                <button class="cetak-btn bg-red-100 text-red-800 hover:bg-red-200 p-2 rounded-full" data-siswa='${JSON.stringify(detailData)}'>
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                                    </svg>
+                                </button>
+                                <span class="text-xs text-gray-500 mt-1">Cetak</span>
+                            </div>
                         </div>
                     </td>
                 `;
-                rekapKehadiran.appendChild(row);
+                tabelRekap.appendChild(row);
+            });
+            
+            // Event listener untuk tombol detail
+            document.querySelectorAll('.detail-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const data = JSON.parse(this.getAttribute('data-siswa'));
+                    showDetailModal(data);
+                });
+            });
+            
+            // Event listener untuk tombol cetak
+            document.querySelectorAll('.cetak-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const data = JSON.parse(this.getAttribute('data-siswa'));
+                    if (confirm(`Anda akan mencetak rekap kehadiran untuk siswa ${data.nama}. Lanjutkan?`)) {
+                        cetakRekapSiswa(data);
+                        showNotification(`Rekap kehadiran ${data.nama} berhasil dicetak!`);
+                    }
+                });
             });
         }
         
-        // Show Detail Kehadiran
-        function showDetailKehadiran(namaSiswa, totalHadir, totalIjin, totalSakit, totalAlpha, nis, tanggalAwal, tanggalAkhir) {
-            document.getElementById('modal-title').textContent = `Detail Kehadiran: ${namaSiswa}`;
-            document.getElementById('total-hadir').textContent = totalHadir;
-            document.getElementById('total-ijin').textContent = totalIjin;
-            document.getElementById('total-sakit').textContent = totalSakit;
-            document.getElementById('total-alpha').textContent = totalAlpha;
+        // Tampilkan modal detail
+        function showDetailModal(data) {
+            const modal = document.getElementById('detail-modal');
+            const modalTitle = document.getElementById('modal-title');
+            const modalContent = document.getElementById('modal-content');
             
-            const detailKehadiran = document.getElementById('detail-kehadiran');
-            detailKehadiran.innerHTML = '';
+            modalTitle.textContent = `Detail Kehadiran: ${data.nama} (${data.nis})`;
             
-            // Get all dates between tanggalAwal and tanggalAkhir
-            const dates = getDatesInRange(new Date(tanggalAwal), new Date(tanggalAkhir));
-            
-            // Sort dates in ascending order
-            dates.sort((a, b) => a - b);
-            
-            dates.forEach(date => {
-                const formattedDate = formatDate(date);
-                const kehadiran = dataKehadiran.find(k => 
-                    k.nis === nis && k.tanggal === formattedDate
-                );
+            let contentHTML = `
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                    <div class="bg-green-50 p-3 rounded-lg text-center">
+                        <div class="text-2xl font-bold text-green-700">${data.totalHadir}</div>
+                        <div class="text-sm text-green-600">Hadir</div>
+                    </div>
+                    <div class="bg-yellow-50 p-3 rounded-lg text-center">
+                        <div class="text-2xl font-bold text-yellow-700">${data.totalIzin}</div>
+                        <div class="text-sm text-yellow-600">Izin</div>
+                    </div>
+                    <div class="bg-blue-50 p-3 rounded-lg text-center">
+                        <div class="text-2xl font-bold text-blue-700">${data.totalSakit}</div>
+                        <div class="text-sm text-blue-600">Sakit</div>
+                    </div>
+                    <div class="bg-red-50 p-3 rounded-lg text-center">
+                        <div class="text-2xl font-bold text-red-700">${data.totalAlpha}</div>
+                        <div class="text-sm text-red-600">Alpha</div>
+                    </div>
+                </div>
                 
-                const row = document.createElement('tr');
+                <div class="overflow-y-auto max-h-96">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Keterangan</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+            `;
+            
+            data.kehadiranData.forEach(item => {
+                let statusClass = '';
+                if (item.statusCode === 'H') statusClass = 'bg-green-100 text-green-800';
+                else if (item.statusCode === 'I') statusClass = 'bg-yellow-100 text-yellow-800';
+                else if (item.statusCode === 'S') statusClass = 'bg-blue-100 text-blue-800';
+                else if (item.statusCode === 'A') statusClass = 'bg-red-100 text-red-800';
                 
-                if (kehadiran) {
-                    row.innerHTML = `
-                        <td class="border-b">${formatDateMonthYear(formattedDate)}</td>
-                        <td class="border-b">
-                            <div class="flex items-center">
-                                <span class="${getStatusIconClass(kehadiran.status)} mr-2">${getStatusIcon(kehadiran.status)}</span>
-                                <span class="${getStatusColor(kehadiran.status)}">${getStatusText(kehadiran.status)}</span>
-                            </div>
+                contentHTML += `
+                    <tr>
+                        <td class="px-4 py-3">${item.tanggal}</td>
+                        <td class="px-4 py-3">
+                            <span class="inline-block px-2 py-1 rounded ${statusClass}">
+                                ${item.status}
+                            </span>
                         </td>
-                        <td class="border-b">${kehadiran.keterangan || '-'}</td>
-                    `;
-                } else {
-                    row.innerHTML = `
-                        <td class="border-b">${formatDateMonthYear(formattedDate)}</td>
-                        <td class="border-b">
-                            <span class="text-gray-400">Tidak ada data</span>
-                        </td>
-                        <td class="border-b">-</td>
-                    `;
-                }
-                
-                detailKehadiran.appendChild(row);
+                        <td class="px-4 py-3">${item.keterangan || '-'}</td>
+                    </tr>
+                `;
             });
             
-            document.getElementById('modal-detail').style.display = 'block';
+            contentHTML += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            
+            modalContent.innerHTML = contentHTML;
+            modal.classList.remove('hidden');
+            
+            // Event listener untuk tombol tutup
+            document.getElementById('close-modal').addEventListener('click', function() {
+                modal.classList.add('hidden');
+            });
+            
+            // Tutup modal jika klik di luar modal
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    modal.classList.add('hidden');
+                }
+            });
         }
         
-        // Cetak Kehadiran (Generate PDF)
-        function cetakKehadiran(nis, namaSiswa, tanggalAwal, tanggalAkhir) {
-            // Get student data
-            const siswa = dataSiswa.find(s => s.nis === nis);
-            if (!siswa) return;
+        // Export Excel
+        document.getElementById('export-excel').addEventListener('click', function() {
+            const tanggalAwal = document.getElementById('tanggal-awal').value;
+            const tanggalAkhir = document.getElementById('tanggal-akhir').value;
             
-            // Get all dates between tanggalAwal and tanggalAkhir
-            const dates = getDatesInRange(new Date(tanggalAwal), new Date(tanggalAkhir));
+            if (!tanggalAwal || !tanggalAkhir) {
+                showNotification('Pilih tanggal awal dan tanggal akhir terlebih dahulu!', 'error');
+                return;
+            }
             
-            // Sort dates in ascending order
-            dates.sort((a, b) => a - b);
+            if (confirm('Anda akan mengexport data kehadiran ke Excel. Lanjutkan?')) {
+                exportToExcel(tanggalAwal, tanggalAkhir);
+                showNotification('Data berhasil diexport ke Excel!');
+            }
+        });
+        
+        // Export PDF
+        document.getElementById('export-pdf').addEventListener('click', function() {
+            const tanggalAwal = document.getElementById('tanggal-awal').value;
+            const tanggalAkhir = document.getElementById('tanggal-akhir').value;
             
-            // Calculate totals
-            let totalHadir = 0;
-            let totalIjin = 0;
-            let totalSakit = 0;
-            let totalAlpha = 0;
+            if (!tanggalAwal || !tanggalAkhir) {
+                showNotification('Pilih tanggal awal dan tanggal akhir terlebih dahulu!', 'error');
+                return;
+            }
             
-            // Prepare data for PDF
-            const tableData = [];
+            if (confirm('Anda akan mencetak data kehadiran ke PDF. Lanjutkan?')) {
+                exportToPDF(tanggalAwal, tanggalAkhir);
+                showNotification('Data berhasil dicetak ke PDF!');
+            }
+        });
+        
+        // Cetak Rekap Siswa Individual
+        function cetakRekapSiswa(data) {
+            // Buat PDF
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('p', 'mm', 'a4');
             
-            dates.forEach((date, index) => {
-                const formattedDate = formatDate(date);
-                const kehadiran = dataKehadiran.find(k => 
-                    k.nis === siswa.nis && k.tanggal === formattedDate
-                );
-                
-                if (kehadiran) {
-                    // Count attendance types
-                    if (kehadiran.status === 'H') totalHadir++;
-                    else if (kehadiran.status === 'I') totalIjin++;
-                    else if (kehadiran.status === 'S') totalSakit++;
-                    else if (kehadiran.status === 'A') totalAlpha++;
-                    
-                    tableData.push([
-                        index + 1,
-                        formatDateMonthYear(formattedDate),
-                        kehadiran.status,
-                        kehadiran.keterangan || '-'
-                    ]);
-                } else {
-                    tableData.push([
-                        index + 1,
-                        formatDateMonthYear(formattedDate),
-                        '-',
-                        '-'
-                    ]);
-                }
-            });
-            
-            // Add total row
-            tableData.push([
-                '',
-                'TOTAL',
-                '',
-                ''
-            ]);
-            
-            tableData.push([
-                '',
-                'Hadir (H)',
-                totalHadir,
-                ''
-            ]);
-            
-            tableData.push([
-                '',
-                'Ijin (I)',
-                totalIjin,
-                ''
-            ]);
-            
-            tableData.push([
-                '',
-                'Sakit (S)',
-                totalSakit,
-                ''
-            ]);
-            
-            tableData.push([
-                '',
-                'Alpha (A)',
-                totalAlpha,
-                ''
-            ]);
-            
-            // Create PDF
-            const doc = new jsPDF();
-            
-            // Add title
+            // Tambahkan judul
             doc.setFontSize(16);
             doc.setFont('helvetica', 'bold');
-            doc.text('REKAP KEHADIRAN SISWA KELAS 8B', doc.internal.pageSize.getWidth() / 2, 20, { align: 'center' });
+            doc.text('REKAP KEHADIRAN SISWA KELAS 8B', doc.internal.pageSize.getWidth() / 2, 15, { align: 'center' });
             
-            // Add student info
+            // Tambahkan info siswa
             doc.setFontSize(12);
             doc.setFont('helvetica', 'normal');
-            doc.text(`NIS: ${siswa.nis}`, 14, 30);
-            doc.text(`Nama: ${siswa.nama}`, 14, 38);
-            doc.text(`Periode: ${formatDateDisplay(tanggalAwal)} - ${formatDateDisplay(tanggalAkhir)}`, 14, 46);
+            doc.text(`NIS: ${data.nis}`, 14, 25);
+            doc.text(`Nama Siswa: ${data.nama}`, 14, 32);
             
-            // Add table
+            // Buat header untuk tabel
+            const header = [['No', 'Tanggal', 'Status', 'Keterangan']];
+            
+            // Buat data untuk tabel
+            const tableData = data.kehadiranData.map((item, index) => [
+                index + 1,
+                item.tanggal,
+                item.statusCode,
+                item.keterangan || '-'
+            ]);
+            
+            // Tambahkan tabel
             doc.autoTable({
-                startY: 55,
-                head: [['No.', 'Tanggal', 'Status', 'Keterangan']],
+                head: header,
                 body: tableData,
-                theme: 'grid',
-                headStyles: {
-                    fillColor: [79, 70, 229],
-                    textColor: 255,
-                    fontStyle: 'bold'
-                },
+                startY: 40,
                 styles: {
                     fontSize: 10,
                     cellPadding: 3
                 },
-                columnStyles: {
-                    0: { cellWidth: 15 },
-                    1: { cellWidth: 50 },
-                    2: { cellWidth: 20 },
-                    3: { cellWidth: 'auto' }
+                headStyles: {
+                    fillColor: [59, 130, 246],
+                    textColor: 255,
+                    fontStyle: 'bold'
+                },
+                alternateRowStyles: {
+                    fillColor: [240, 244, 248]
                 }
             });
             
-            // Save PDF
-            doc.save(`Rekap_Kehadiran_${siswa.nama}.pdf`);
+            // Tambahkan ringkasan
+            const finalY = doc.lastAutoTable.finalY + 10;
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'bold');
+            doc.text('Ringkasan Kehadiran:', 14, finalY);
+            doc.setFont('helvetica', 'normal');
+            doc.text(`Total Hadir: ${data.totalHadir}`, 14, finalY + 7);
+            doc.text(`Total Izin: ${data.totalIzin}`, 14, finalY + 14);
+            doc.text(`Total Sakit: ${data.totalSakit}`, 14, finalY + 21);
+            doc.text(`Total Alpha: ${data.totalAlpha}`, 14, finalY + 28);
+            
+            // Tambahkan keterangan
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'bold');
+            doc.text('Keterangan:', 14, finalY + 38);
+            doc.setFont('helvetica', 'normal');
+            doc.text('H = Hadir', 14, finalY + 44);
+            doc.text('I = Izin', 14, finalY + 50);
+            doc.text('S = Sakit', 14, finalY + 56);
+            doc.text('A = Alpha', 14, finalY + 62);
+            
+            // Simpan file
+            const fileName = `Rekap_Kehadiran_${data.nama.replace(/\s+/g, '_')}_${data.nis}.pdf`;
+            doc.save(fileName);
         }
         
-        // Cetak PDF All Students
-        function cetakPDFAll(tanggalAwal, tanggalAkhir) {
-            // Get all dates between tanggalAwal and tanggalAkhir
-            const dates = getDatesInRange(new Date(tanggalAwal), new Date(tanggalAkhir));
+        // Export to Excel Function
+        function exportToExcel(tanggalAwal, tanggalAkhir) {
+            // Dapatkan semua tanggal dalam rentang
+            const tanggalList = getTanggalRange(tanggalAwal, tanggalAkhir);
             
-            // Sort dates in ascending order
-            dates.sort((a, b) => a - b);
+            // Buat header untuk Excel
+            const header = ['No', 'Nama Siswa'];
             
-            // Create PDF
-            const doc = new jsPDF();
-            
-            // Add title
-            doc.setFontSize(16);
-            doc.setFont('helvetica', 'bold');
-            doc.text('REKAP KEHADIRAN SISWA KELAS 8B', doc.internal.pageSize.getWidth() / 2, 20, { align: 'center' });
-            
-            // Add period info
-            doc.setFontSize(12);
-            doc.setFont('helvetica', 'normal');
-            doc.text(`Periode: ${formatDateDisplay(tanggalAwal)} - ${formatDateDisplay(tanggalAkhir)}`, doc.internal.pageSize.getWidth() / 2, 30, { align: 'center' });
-            
-            // Create header row with dates
-            const headerRow = ['No.', 'Nama Siswa'];
-            
-            // Add date columns
-            dates.forEach(date => {
-                headerRow.push(formatDateShort(formatDate(date)));
+            // Tambahkan tanggal ke header
+            tanggalList.forEach(tanggal => {
+                const formattedTanggal = new Date(tanggal).toLocaleDateString('id-ID', {
+                    day: '2-digit',
+                    month: '2-digit'
+                });
+                header.push(formattedTanggal);
             });
             
-            // Add total columns
-            headerRow.push('H');
-            headerRow.push('I');
-            headerRow.push('S');
-            headerRow.push('A');
+            // Tambahkan kolom total
+            header.push('Total H', 'Total I', 'Total S', 'Total A');
             
-            // Create data rows
-            const dataRows = [];
+            // Buat data untuk Excel
+            const data = [header];
             
             dataSiswa.forEach((siswa, index) => {
                 const row = [index + 1, siswa.nama];
                 
-                // Track totals for this student
+                // Hitung total kehadiran
                 let totalHadir = 0;
-                let totalIjin = 0;
+                let totalIzin = 0;
                 let totalSakit = 0;
                 let totalAlpha = 0;
                 
-                dates.forEach(date => {
-                    const formattedDate = formatDate(date);
-                    const kehadiran = dataKehadiran.find(k => 
-                        k.nis === siswa.nis && k.tanggal === formattedDate
-                    );
+                // Tambahkan status kehadiran per tanggal
+                tanggalList.forEach(tanggal => {
+                    const kehadiran = dataKehadiran.find(k => k.nis === siswa.nis && k.tanggal === tanggal);
+                    let status = 'A'; // Default Alpha
                     
                     if (kehadiran) {
-                        row.push(kehadiran.status);
-                        
-                        // Count attendance types
-                        if (kehadiran.status === 'H') totalHadir++;
-                        else if (kehadiran.status === 'I') totalIjin++;
-                        else if (kehadiran.status === 'S') totalSakit++;
-                        else if (kehadiran.status === 'A') totalAlpha++;
+                        if (kehadiran.status === 'hadir') {
+                            status = 'H';
+                            totalHadir++;
+                        } else if (kehadiran.status === 'izin') {
+                            status = 'I';
+                            totalIzin++;
+                        } else if (kehadiran.status === 'sakit') {
+                            status = 'S';
+                            totalSakit++;
+                        } else if (kehadiran.status === 'alpha') {
+                            status = 'A';
+                            totalAlpha++;
+                        }
                     } else {
-                        row.push('-');
+                        totalAlpha++;
                     }
+                    
+                    row.push(status);
                 });
                 
-                // Add totals to the row
-                row.push(totalHadir);
-                row.push(totalIjin);
-                row.push(totalSakit);
-                row.push(totalAlpha);
+                // Tambahkan total
+                row.push(totalHadir, totalIzin, totalSakit, totalAlpha);
                 
-                dataRows.push(row);
+                data.push(row);
             });
             
-            // Add table
+            // Buat workbook dan worksheet
+            const ws = XLSX.utils.aoa_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            
+            // Tambahkan judul
+            XLSX.utils.sheet_add_aoa(ws, [['REKAP KEHADIRAN SISWA KELAS 8B']], { origin: 'A1' });
+            
+            // Merge cells untuk judul
+            if(!ws['!merges']) ws['!merges'] = [];
+            ws['!merges'].push({ s: { r: 0, c: 0 }, e: { r: 0, c: header.length - 1 } });
+            
+            // Tambahkan keterangan
+            const lastRow = data.length + 2;
+            XLSX.utils.sheet_add_aoa(ws, [
+                ['Keterangan:'],
+                ['H = Hadir'],
+                ['I = Izin'],
+                ['S = Sakit'],
+                ['A = Alpha']
+            ], { origin: `A${lastRow}` });
+            
+            // Styling
+            const range = XLSX.utils.decode_range(ws['!ref']);
+            for (let C = range.s.c; C <= range.e.c; ++C) {
+                const address = XLSX.utils.encode_col(C) + '2'; // Header row
+                if (!ws[address]) continue;
+                ws[address].s = { font: { bold: true } };
+            }
+            
+            // Judul dengan huruf besar
+            const titleAddress = 'A1';
+            ws[titleAddress].s = { font: { bold: true, sz: 14 }, alignment: { horizontal: 'center' } };
+            
+            XLSX.utils.book_append_sheet(wb, ws, 'Rekap Kehadiran');
+            
+            // Konversi ke binary string
+            const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'binary' });
+            
+            // Fungsi untuk mengkonversi string ke ArrayBuffer
+            function s2ab(s) {
+                const buf = new ArrayBuffer(s.length);
+                const view = new Uint8Array(buf);
+                for (let i = 0; i < s.length; i++) view[i] = s.charCodeAt(i) & 0xFF;
+                return buf;
+            }
+            
+            // Simpan file
+            const fileName = `Rekap_Kehadiran_8B_${tanggalAwal}_${tanggalAkhir}.xlsx`;
+            saveAs(new Blob([s2ab(wbout)], { type: 'application/octet-stream' }), fileName);
+        }
+        
+        // Export to PDF Function
+        function exportToPDF(tanggalAwal, tanggalAkhir) {
+            // Dapatkan semua tanggal dalam rentang
+            const tanggalList = getTanggalRange(tanggalAwal, tanggalAkhir);
+            
+            // Format tanggal untuk judul
+            const formattedTanggalAwal = new Date(tanggalAwal).toLocaleDateString('id-ID', {
+                day: '2-digit',
+                month: 'long',
+                year: 'numeric'
+            });
+            
+            const formattedTanggalAkhir = new Date(tanggalAkhir).toLocaleDateString('id-ID', {
+                day: '2-digit',
+                month: 'long',
+                year: 'numeric'
+            });
+            
+            // Buat header untuk tabel
+            const header = [['No', 'Nama Siswa']];
+            
+            // Tambahkan tanggal ke header
+            tanggalList.forEach(tanggal => {
+                const formattedTanggal = new Date(tanggal).toLocaleDateString('id-ID', {
+                    day: '2-digit',
+                    month: '2-digit'
+                });
+                header[0].push(formattedTanggal);
+            });
+            
+            // Tambahkan kolom total
+            header[0].push('Total H', 'Total I', 'Total S', 'Total A');
+            
+            // Buat data untuk tabel
+            const data = [];
+            
+            dataSiswa.forEach((siswa, index) => {
+                const row = [index + 1, siswa.nama];
+                
+                // Hitung total kehadiran
+                let totalHadir = 0;
+                let totalIzin = 0;
+                let totalSakit = 0;
+                let totalAlpha = 0;
+                
+                // Tambahkan status kehadiran per tanggal
+                tanggalList.forEach(tanggal => {
+                    const kehadiran = dataKehadiran.find(k => k.nis === siswa.nis && k.tanggal === tanggal);
+                    let status = 'A'; // Default Alpha
+                    
+                    if (kehadiran) {
+                        if (kehadiran.status === 'hadir') {
+                            status = 'H';
+                            totalHadir++;
+                        } else if (kehadiran.status === 'izin') {
+                            status = 'I';
+                            totalIzin++;
+                        } else if (kehadiran.status === 'sakit') {
+                            status = 'S';
+                            totalSakit++;
+                        } else if (kehadiran.status === 'alpha') {
+                            status = 'A';
+                            totalAlpha++;
+                        }
+                    } else {
+                        totalAlpha++;
+                    }
+                    
+                    row.push(status);
+                });
+                
+                // Tambahkan total
+                row.push(totalHadir, totalIzin, totalSakit, totalAlpha);
+                
+                data.push(row);
+            });
+            
+            // Buat PDF
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('l', 'mm', 'a4');
+            
+            // Tambahkan judul
+            doc.setFontSize(16);
+            doc.setFont('helvetica', 'bold');
+            doc.text('REKAP KEHADIRAN SISWA KELAS 8B', doc.internal.pageSize.getWidth() / 2, 15, { align: 'center' });
+            
+            // Tambahkan periode
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'normal');
+            doc.text(`Periode: ${formattedTanggalAwal} - ${formattedTanggalAkhir}`, doc.internal.pageSize.getWidth() / 2, 22, { align: 'center' });
+            
+            // Tambahkan tabel
             doc.autoTable({
-                startY: 40,
-                head: [headerRow],
-                body: dataRows,
-                theme: 'grid',
-                headStyles: {
-                    fillColor: [79, 70, 229],
-                    textColor: 255,
-                    fontStyle: 'bold'
-                },
+                head: header,
+                body: data,
+                startY: 30,
                 styles: {
                     fontSize: 8,
                     cellPadding: 2
                 },
-                columnStyles: {
-                    0: { cellWidth: 10 }, // No.
-                    1: { cellWidth: 40 }  // Nama Siswa
+                headStyles: {
+                    fillColor: [59, 130, 246],
+                    textColor: 255,
+                    fontStyle: 'bold'
                 },
-                didDrawPage: function(data) {
-                    // Add legend at the bottom of the page
-                    const pageHeight = doc.internal.pageSize.height;
-                    doc.setFontSize(10);
-                    doc.text('Keterangan:', 14, pageHeight - 30);
-                    doc.text('H = Hadir', 14, pageHeight - 25);
-                    doc.text('I = Ijin', 14, pageHeight - 20);
-                    doc.text('S = Sakit', 14, pageHeight - 15);
-                    doc.text('A = Alpha', 14, pageHeight - 10);
+                alternateRowStyles: {
+                    fillColor: [240, 244, 248]
                 }
             });
             
-            // Save PDF
-            doc.save(`Rekap_Kehadiran_Semua_Siswa_${tanggalAwal}_${tanggalAkhir}.pdf`);
+            // Tambahkan keterangan
+            const finalY = doc.lastAutoTable.finalY + 10;
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'bold');
+            doc.text('Keterangan:', 14, finalY);
+            doc.setFont('helvetica', 'normal');
+            doc.text('H = Hadir', 14, finalY + 6);
+            doc.text('I = Izin', 14, finalY + 12);
+            doc.text('S = Sakit', 14, finalY + 18);
+            doc.text('A = Alpha', 14, finalY + 24);
+            
+            // Simpan file
+            const fileName = `Rekap_Kehadiran_8B_${tanggalAwal}_${tanggalAkhir}.pdf`;
+            doc.save(fileName);
         }
         
-        // Export to Excel
-        document.getElementById('export-excel').addEventListener('click', function() {
-            document.getElementById('modal-konfirmasi-excel').style.display = 'block';
-        });
-        
-        // Export PDF All
-        document.getElementById('export-pdf-all').addEventListener('click', function() {
-            document.getElementById('modal-konfirmasi-pdf-all').style.display = 'block';
-        });
-        
-        function exportToExcel(tanggalAwal, tanggalAkhir) {
-            // Get all dates between tanggalAwal and tanggalAkhir
-            const dates = getDatesInRange(new Date(tanggalAwal), new Date(tanggalAkhir));
+        // Helper function untuk mendapatkan rentang tanggal
+        function getTanggalRange(start, end) {
+            const result = [];
+            const startDate = new Date(start);
+            const endDate = new Date(end);
             
-            // Sort dates in ascending order
-            dates.sort((a, b) => a - b);
-            
-            // Create title row
-            const titleRow = ['REKAP KEHADIRAN SISWA KELAS 8B'];
-            
-            // Create header row with dates
-            const headerRow = ['No.', 'Nama Siswa'];
-            dates.forEach(date => {
-                headerRow.push(formatDateShort(formatDate(date)));
-            });
-            
-            // Add total columns
-            headerRow.push('Total Hadir');
-            headerRow.push('Total Ijin');
-            headerRow.push('Total Sakit');
-            headerRow.push('Total Alpha');
-            
-            // Create data rows
-            const dataRows = [];
-            dataSiswa.forEach((siswa, index) => {
-                const row = [index + 1, siswa.nama];
-                
-                // Track totals for this student
-                let totalHadir = 0;
-                let totalIjin = 0;
-                let totalSakit = 0;
-                let totalAlpha = 0;
-                
-                dates.forEach(date => {
-                    const formattedDate = formatDate(date);
-                    const kehadiran = dataKehadiran.find(k => 
-                        k.nis === siswa.nis && k.tanggal === formattedDate
-                    );
-                    
-                    if (kehadiran) {
-                        row.push(kehadiran.status);
-                        
-                        // Count attendance types
-                        if (kehadiran.status === 'H') totalHadir++;
-                        else if (kehadiran.status === 'I') totalIjin++;
-                        else if (kehadiran.status === 'S') totalSakit++;
-                        else if (kehadiran.status === 'A') totalAlpha++;
-                    } else {
-                        row.push('-');
-                    }
-                });
-                
-                // Add totals to the row
-                row.push(totalHadir);
-                row.push(totalIjin);
-                row.push(totalSakit);
-                row.push(totalAlpha);
-                
-                dataRows.push(row);
-            });
-            
-            // Add legend
-            dataRows.push([]);
-            dataRows.push(['Keterangan:']);
-            dataRows.push(['H', 'Hadir']);
-            dataRows.push(['I', 'Ijin']);
-            dataRows.push(['S', 'Sakit']);
-            dataRows.push(['A', 'Alpha']);
-            
-            // Create worksheet
-            const ws = XLSX.utils.aoa_to_sheet([
-                titleRow,
-                [],
-                headerRow,
-                ...dataRows
-            ]);
-            
-            // Style the title (merge cells)
-            if (!ws['!merges']) ws['!merges'] = [];
-            ws['!merges'].push({ s: { r: 0, c: 0 }, e: { r: 0, c: headerRow.length - 1 } });
-            
-            // Set column widths to fit content
-            const colWidths = [];
-            
-            // Set width for No. and Nama Siswa columns
-            colWidths[0] = { wch: 5 };  // No.
-            colWidths[1] = { wch: 25 }; // Nama Siswa
-            
-            // Set width for date columns
-            for (let i = 0; i < dates.length; i++) {
-                colWidths[i + 2] = { wch: 6 }; // Date columns (fit for DD/MM format)
-            }
-            
-            // Set width for total columns
-            colWidths[dates.length + 2] = { wch: 12 }; // Total Hadir
-            colWidths[dates.length + 3] = { wch: 12 }; // Total Ijin
-            colWidths[dates.length + 4] = { wch: 12 }; // Total Sakit
-            colWidths[dates.length + 5] = { wch: 12 }; // Total Alpha
-            
-            ws['!cols'] = colWidths;
-            
-            // Create workbook
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, 'Rekap Kehadiran');
-            
-            // Generate Excel file
-            const fileName = `Rekap_Kehadiran_${tanggalAwal}_${tanggalAkhir}.xlsx`;
-            XLSX.writeFile(wb, fileName);
-        }
-        
-        // Helper Functions
-        function getDatesInRange(startDate, endDate) {
-            const dates = [];
             let currentDate = new Date(startDate);
             
             while (currentDate <= endDate) {
-                dates.push(new Date(currentDate));
+                result.push(currentDate.toISOString().split('T')[0]);
                 currentDate.setDate(currentDate.getDate() + 1);
             }
             
-            return dates;
+            return result;
         }
         
-        function formatDate(date) {
-            const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const day = String(date.getDate()).padStart(2, '0');
-            return `${year}-${month}-${day}`;
-        }
-        
-        function formatDateDisplay(dateString) {
-            const date = new Date(dateString);
-            const day = String(date.getDate()).padStart(2, '0');
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const year = date.getFullYear();
-            return `${day}/${month}/${year}`;
-        }
-        
-        function formatDateShort(dateString) {
-            const date = new Date(dateString);
-            const day = String(date.getDate()).padStart(2, '0');
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            return `${day}/${month}`;
-        }
-        
-        function formatDateMonthYear(dateString) {
-            const date = new Date(dateString);
-            const day = String(date.getDate()).padStart(2, '0');
-            const monthNames = [
-                "Januari", "Februari", "Maret", "April", "Mei", "Juni",
-                "Juli", "Agustus", "September", "Oktober", "November", "Desember"
-            ];
-            const month = monthNames[date.getMonth()];
-            const year = date.getFullYear();
-            return `${day} ${month} ${year}`;
-        }
-        
-        function getStatusText(status) {
-            switch (status) {
-                case 'H': return 'Hadir';
-                case 'I': return 'Ijin';
-                case 'S': return 'Sakit';
-                case 'A': return 'Alpha';
-                default: return '';
-            }
-        }
-        
-        function getStatusColor(status) {
-            switch (status) {
-                case 'H': return 'text-green-600';
-                case 'I': return 'text-yellow-600';
-                case 'S': return 'text-blue-600';
-                case 'A': return 'text-red-600';
-                default: return '';
-            }
-        }
-        
-        function getStatusIcon(status) {
-            switch (status) {
-                case 'H': return '✓';
-                case 'I': return '📝';
-                case 'S': return '🤒';
-                case 'A': return '❌';
-                default: return '';
-            }
-        }
-        
-        function getStatusIconClass(status) {
-            switch (status) {
-                case 'H': return 'text-green-600';
-                case 'I': return 'text-yellow-600';
-                case 'S': return 'text-blue-600';
-                case 'A': return 'text-red-600';
-                default: return '';
-            }
-        }
-        
-        // Modal functionality
-        const modalDetail = document.getElementById('modal-detail');
-        const modalKonfirmasi = document.getElementById('modal-konfirmasi');
-        const modalKonfirmasiCetak = document.getElementById('modal-konfirmasi-cetak');
-        const modalKonfirmasiExcel = document.getElementById('modal-konfirmasi-excel');
-        const modalKonfirmasiPDFAll = document.getElementById('modal-konfirmasi-pdf-all');
-        const closeButtons = document.querySelectorAll('.close');
-        
-        closeButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                modalDetail.style.display = 'none';
-                modalKonfirmasi.style.display = 'none';
-                modalKonfirmasiCetak.style.display = 'none';
-                modalKonfirmasiExcel.style.display = 'none';
-                modalKonfirmasiPDFAll.style.display = 'none';
-            });
+        // Load data saat halaman dimuat
+        window.addEventListener('DOMContentLoaded', function() {
+            loadTabelSiswa();
         });
-        
-        window.addEventListener('click', function(event) {
-            if (event.target === modalDetail) {
-                modalDetail.style.display = 'none';
-            }
-            if (event.target === modalKonfirmasi) {
-                modalKonfirmasi.style.display = 'none';
-            }
-            if (event.target === modalKonfirmasiCetak) {
-                modalKonfirmasiCetak.style.display = 'none';
-            }
-            if (event.target === modalKonfirmasiExcel) {
-                modalKonfirmasiExcel.style.display = 'none';
-            }
-            if (event.target === modalKonfirmasiPDFAll) {
-                modalKonfirmasiPDFAll.style.display = 'none';
-            }
-        });
-        
-        // Delete confirmation buttons
-        document.getElementById('btn-batal-hapus').addEventListener('click', function() {
-            modalKonfirmasi.style.display = 'none';
-            siswaToDelete = null;
-        });
-        
-        document.getElementById('btn-konfirmasi-hapus').addEventListener('click', function() {
-            if (siswaToDelete) {
-                hapusSiswa(siswaToDelete);
-                modalKonfirmasi.style.display = 'none';
-                siswaToDelete = null;
-            }
-        });
-        
-        // Print confirmation buttons
-        document.getElementById('btn-batal-cetak').addEventListener('click', function() {
-            modalKonfirmasiCetak.style.display = 'none';
-            siswaToCetak = null;
-        });
-        
-        document.getElementById('btn-konfirmasi-cetak').addEventListener('click', function() {
-            if (siswaToCetak) {
-                cetakKehadiran(siswaToCetak.nis, siswaToCetak.nama, siswaToCetak.tanggalAwal, siswaToCetak.tanggalAkhir);
-                modalKonfirmasiCetak.style.display = 'none';
-                siswaToCetak = null;
-            }
-        });
-        
-        // Excel confirmation buttons
-        document.getElementById('btn-batal-excel').addEventListener('click', function() {
-            modalKonfirmasiExcel.style.display = 'none';
-        });
-        
-        document.getElementById('btn-konfirmasi-excel').addEventListener('click', function() {
-            exportToExcel(currentTanggalAwal, currentTanggalAkhir);
-            modalKonfirmasiExcel.style.display = 'none';
-        });
-        
-        // PDF All confirmation buttons
-        document.getElementById('btn-batal-pdf-all').addEventListener('click', function() {
-            modalKonfirmasiPDFAll.style.display = 'none';
-        });
-        
-        document.getElementById('btn-konfirmasi-pdf-all').addEventListener('click', function() {
-            cetakPDFAll(currentTanggalAwal, currentTanggalAkhir);
-            modalKonfirmasiPDFAll.style.display = 'none';
-        });
-        
-        // Initialize tables
-        renderSiswaTable();
-        
-        // Set today's date as default for kehadiran
-        const today = new Date();
-        const year = today.getFullYear();
-        const month = String(today.getMonth() + 1).padStart(2, '0');
-        const day = String(today.getDate()).padStart(2, '0');
-        document.getElementById('tanggal-kehadiran').value = `${year}-${month}-${day}`;
-        
-        // Always show login screen first
-        showLogin();
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9633fabba5f0fd1e',t:'MTc1MzE5ODIyOC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'963b38f446cbf44c',t:'MTc1MzI3NDE3Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
