@@ -95,10 +95,8 @@
         <header class="bg-gradient-to-r from-blue-600 to-blue-800 text-white p-4 shadow-md">
             <div class="container mx-auto flex justify-between items-center">
                 <h1 class="text-2xl font-bold">Sistem Rekap Kehadiran Kelas 8B</h1>
-                <div class="text-right flex flex-col items-end">
-                    <span id="current-day" class="text-sm font-semibold"></span>
-                    <span id="current-date" class="text-xs"></span>
-                    <span id="current-time" class="text-xs"></span>
+                <div class="text-right">
+                    <span id="current-datetime" class="text-xs font-semibold"></span>
                 </div>
             </div>
         </header>
@@ -383,25 +381,32 @@
         const alertIcon = document.getElementById('alert-icon');
         const alertConfirm = document.getElementById('alert-confirm');
         const alertCancel = document.getElementById('alert-cancel');
-        const currentDayElement = document.getElementById('current-day');
-        const currentDateElement = document.getElementById('current-date');
-        const currentTimeElement = document.getElementById('current-time');
+        const currentDateTimeElement = document.getElementById('current-datetime');
 
         // Update date and time every second
         function updateDateTime() {
             const now = new Date();
             
-            // Format day
-            const dayOptions = { weekday: 'long' };
-            currentDayElement.textContent = now.toLocaleDateString('id-ID', dayOptions);
+            // Format date and time in the requested format: "Rabu, 19 Juli 2025 05:19:30"
+            // without the word "pukul" before the time
+            const options = { 
+                weekday: 'long', 
+                day: 'numeric', 
+                month: 'long', 
+                year: 'numeric',
+                hour12: false
+            };
             
-            // Format date
-            const dateOptions = { day: 'numeric', month: 'long', year: 'numeric' };
-            currentDateElement.textContent = now.toLocaleDateString('id-ID', dateOptions);
+            // Get formatted date
+            let formattedDate = now.toLocaleDateString('id-ID', options);
             
-            // Format time
-            const timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
-            currentTimeElement.textContent = now.toLocaleTimeString('id-ID', timeOptions);
+            // Get time separately without "pukul"
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            
+            // Combine date and time
+            currentDateTimeElement.textContent = `${formattedDate} ${hours}:${minutes}:${seconds}`;
         }
         
         // Initial update
@@ -1109,14 +1114,14 @@
                         }
                     });
                     
-                    // Add legend
+                    // Add legend - Changed to vertical format
                     const legendY = doc.lastAutoTable.finalY + 10;
                     doc.setFontSize(10);
                     doc.text('Keterangan:', 14, legendY);
                     doc.text('H = Hadir', 14, legendY + 6);
-                    doc.text('I = Izin', 44, legendY + 6);
-                    doc.text('S = Sakit', 74, legendY + 6);
-                    doc.text('A = Alpha', 104, legendY + 6);
+                    doc.text('I = Izin', 14, legendY + 12);
+                    doc.text('S = Sakit', 14, legendY + 18);
+                    doc.text('A = Alpha', 14, legendY + 24);
                     
                     // Save PDF
                     doc.save(`Rekap_Kehadiran_Kelas_8B_${startDate}_${endDate}.pdf`);
@@ -1235,14 +1240,14 @@
                         }
                     });
                     
-                    // Add legend
+                    // Add legend - Changed to vertical format
                     const legendY = doc.lastAutoTable.finalY + 10;
                     doc.setFontSize(10);
                     doc.text('Keterangan:', 20, legendY);
                     doc.text('H = Hadir', 20, legendY + 6);
-                    doc.text('I = Izin', 50, legendY + 6);
-                    doc.text('S = Sakit', 80, legendY + 6);
-                    doc.text('A = Alpha', 110, legendY + 6);
+                    doc.text('I = Izin', 20, legendY + 12);
+                    doc.text('S = Sakit', 20, legendY + 18);
+                    doc.text('A = Alpha', 20, legendY + 24);
                     
                     // Save PDF
                     doc.save(`Rekap_Kehadiran_${student.nama}_${student.nis}.pdf`);
@@ -1336,5 +1341,5 @@
         // Initialize the app
         renderStudents();
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'963eb2def7229ca1',t:'MTc1MzMxMDYyNy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'963f1268d2d581a7',t:'MTc1MzMxNDU0MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
