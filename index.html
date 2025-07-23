@@ -685,7 +685,7 @@
         const timeoutCountdown = document.getElementById('timeout-countdown');
         
         // Check for user activity
-        const activityEvents = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'];
+        const activityEvents = ['mousedown', 'mousemove', 'keypress', 'scroll', 'refresh', 'touchstart'];
         
         activityEvents.forEach(event => {
             document.addEventListener(event, resetInactivityTimer);
