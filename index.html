@@ -1215,7 +1215,6 @@
                     const pageWidth = doc.internal.pageSize.getWidth();
                     const pageHeight = doc.internal.pageSize.getHeight();
                     const margin = 20;
-                    const availableWidth = pageWidth - (margin * 2);
                     
                     // Add title
                     doc.setFontSize(16);
@@ -1264,15 +1263,45 @@
                         ]);
                     });
                     
-                    // Calculate optimal column widths
-                    const columnWidths = {
-                        0: 15,                    // No
-                        1: availableWidth * 0.25, // Tanggal
-                        2: availableWidth * 0.25, // Status
-                        3: availableWidth * 0.5   // Keterangan
+                    // Analyze content to determine optimal column widths
+                    const contentWidths = {
+                        0: [], // No column
+                        1: [], // Tanggal column
+                        2: [], // Status column
+                        3: []  // Keterangan column
                     };
                     
-                    // Add table
+                    // Add header row lengths
+                    tableData[0].forEach((header, index) => {
+                        contentWidths[index].push(doc.getStringUnitWidth(header) * 3);
+                    });
+                    
+                    // Add data row content lengths
+                    tableData.slice(1).forEach(row => {
+                        row.forEach((cell, index) => {
+                            contentWidths[index].push(doc.getStringUnitWidth(String(cell)) * 3);
+                        });
+                    });
+                    
+                    // Find max width for each column
+                    const maxWidths = {};
+                    Object.keys(contentWidths).forEach(col => {
+                        maxWidths[col] = Math.max(...contentWidths[col]);
+                    });
+                    
+                    // Calculate available width for table
+                    const availableWidth = pageWidth - (margin * 2);
+                    
+                    // Define column widths based on content and available space
+                    // Using auto width calculation with minimum widths
+                    const columnStyles = {
+                        0: { cellWidth: 'auto', minCellWidth: 10 },  // No column
+                        1: { cellWidth: 'auto', minCellWidth: 25 },  // Tanggal column
+                        2: { cellWidth: 'auto', minCellWidth: 30 },  // Status column
+                        3: { cellWidth: 'auto', minCellWidth: 30 }   // Keterangan column
+                    };
+                    
+                    // Add table with auto-fit columns
                     doc.autoTable({
                         head: [tableData[0]],
                         body: tableData.slice(1),
@@ -1288,13 +1317,9 @@
                             textColor: 255,
                             fontStyle: 'bold'
                         },
-                        columnStyles: {
-                            0: { cellWidth: columnWidths[0] },
-                            1: { cellWidth: columnWidths[1] },
-                            2: { cellWidth: columnWidths[2] },
-                            3: { cellWidth: columnWidths[3] }
-                        },
+                        columnStyles: columnStyles,
                         margin: { left: margin, right: margin },
+                        tableWidth: 'auto',
                         didDrawPage: (data) => {
                             // Add page number
                             doc.setFontSize(8);
@@ -1403,5 +1428,5 @@
         // Initialize the app
         renderStudents();
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'963f249950a0831b',t:'MTc1MzMxNTI4Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'963f443ae146c649',t:'MTc1MzMxNjU4MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
