@@ -1093,6 +1093,41 @@
                         tableData.push(row);
                     });
                     
+                    // Calculate column widths based on content
+                    const pageWidth = doc.internal.pageSize.getWidth();
+                    const margin = 10;
+                    const availableWidth = pageWidth - (margin * 2);
+                    
+                    // Set fixed widths for first columns
+                    const fixedWidths = {
+                        0: 10, // No
+                        1: 20, // NIS
+                        2: 40, // Nama Siswa
+                    };
+                    
+                    // Calculate total fixed width
+                    const totalFixedWidth = Object.values(fixedWidths).reduce((sum, width) => sum + width, 0);
+                    
+                    // Calculate remaining width for date columns and summary columns
+                    const remainingColumns = headerRow.length - Object.keys(fixedWidths).length;
+                    const remainingWidth = availableWidth - totalFixedWidth;
+                    
+                    // Calculate width for each remaining column
+                    const dateColumnWidth = remainingWidth / remainingColumns;
+                    
+                    // Create column styles object
+                    const columnStyles = {};
+                    
+                    // Set fixed column widths
+                    Object.entries(fixedWidths).forEach(([col, width]) => {
+                        columnStyles[col] = { cellWidth: width };
+                    });
+                    
+                    // Set date column widths
+                    for (let i = Object.keys(fixedWidths).length; i < headerRow.length; i++) {
+                        columnStyles[i] = { cellWidth: dateColumnWidth };
+                    }
+                    
                     // Add table
                     doc.autoTable({
                         head: [tableData[0]],
@@ -1100,17 +1135,21 @@
                         startY: 30,
                         styles: {
                             fontSize: 8,
-                            cellPadding: 1
+                            cellPadding: 1,
+                            overflow: 'linebreak',
+                            lineWidth: 0.1
                         },
                         headStyles: {
                             fillColor: [59, 130, 246],
                             textColor: 255,
                             fontStyle: 'bold'
                         },
-                        columnStyles: {
-                            0: { cellWidth: 10 }, // No
-                            1: { cellWidth: 20 }, // NIS
-                            2: { cellWidth: 40 }, // Nama Siswa
+                        columnStyles: columnStyles,
+                        margin: { left: margin, right: margin },
+                        didDrawPage: (data) => {
+                            // Add page number
+                            doc.setFontSize(8);
+                            doc.text(`Halaman ${doc.internal.getNumberOfPages()}`, pageWidth - 15, doc.internal.pageSize.getHeight() - 10);
                         }
                     });
                     
@@ -1172,31 +1211,37 @@
                     const { jsPDF } = window.jspdf;
                     const doc = new jsPDF('p', 'mm', 'a4');
                     
+                    // Page dimensions
+                    const pageWidth = doc.internal.pageSize.getWidth();
+                    const pageHeight = doc.internal.pageSize.getHeight();
+                    const margin = 20;
+                    const availableWidth = pageWidth - (margin * 2);
+                    
                     // Add title
                     doc.setFontSize(16);
                     doc.setFont(undefined, 'bold');
-                    doc.text('REKAP KEHADIRAN', 105, 15, { align: 'center' });
+                    doc.text('REKAP KEHADIRAN', pageWidth / 2, 15, { align: 'center' });
                     
                     // Add student info
                     doc.setFontSize(12);
                     doc.setFont(undefined, 'normal');
-                    doc.text(`NIS: ${student.nis}`, 20, 30);
-                    doc.text(`Nama Siswa: ${student.nama}`, 20, 37);
+                    doc.text(`NIS: ${student.nis}`, margin, 30);
+                    doc.text(`Nama Siswa: ${student.nama}`, margin, 37);
                     
                     if (startDate && endDate) {
-                        doc.text(`Periode: ${formatDate(startDate)} - ${formatDate(endDate)}`, 20, 44);
+                        doc.text(`Periode: ${formatDate(startDate)} - ${formatDate(endDate)}`, margin, 44);
                     }
                     
                     // Add summary
                     doc.setFontSize(12);
                     doc.setFont(undefined, 'bold');
-                    doc.text('Ringkasan Kehadiran:', 20, 55);
+                    doc.text('Ringkasan Kehadiran:', margin, 55);
                     
                     doc.setFont(undefined, 'normal');
-                    doc.text(`Total Hadir: ${totalHadir}`, 30, 62);
-                    doc.text(`Total Izin: ${totalIzin}`, 30, 69);
-                    doc.text(`Total Sakit: ${totalSakit}`, 30, 76);
-                    doc.text(`Total Alpha: ${totalAlpha}`, 30, 83);
+                    doc.text(`Total Hadir: ${totalHadir}`, margin + 10, 62);
+                    doc.text(`Total Izin: ${totalIzin}`, margin + 10, 69);
+                    doc.text(`Total Sakit: ${totalSakit}`, margin + 10, 76);
+                    doc.text(`Total Alpha: ${totalAlpha}`, margin + 10, 83);
                     
                     // Prepare table data
                     const tableData = [];
@@ -1219,13 +1264,24 @@
                         ]);
                     });
                     
+                    // Calculate optimal column widths
+                    const columnWidths = {
+                        0: 15,                    // No
+                        1: availableWidth * 0.25, // Tanggal
+                        2: availableWidth * 0.25, // Status
+                        3: availableWidth * 0.5   // Keterangan
+                    };
+                    
                     // Add table
                     doc.autoTable({
                         head: [tableData[0]],
                         body: tableData.slice(1),
                         startY: 95,
                         styles: {
-                            fontSize: 10
+                            fontSize: 10,
+                            overflow: 'linebreak',
+                            cellPadding: 2,
+                            lineWidth: 0.1
                         },
                         headStyles: {
                             fillColor: [59, 130, 246],
@@ -1233,21 +1289,27 @@
                             fontStyle: 'bold'
                         },
                         columnStyles: {
-                            0: { cellWidth: 15 }, // No
-                            1: { cellWidth: 40 }, // Tanggal
-                            2: { cellWidth: 40 }, // Status
-                            3: { cellWidth: 'auto' } // Keterangan
+                            0: { cellWidth: columnWidths[0] },
+                            1: { cellWidth: columnWidths[1] },
+                            2: { cellWidth: columnWidths[2] },
+                            3: { cellWidth: columnWidths[3] }
+                        },
+                        margin: { left: margin, right: margin },
+                        didDrawPage: (data) => {
+                            // Add page number
+                            doc.setFontSize(8);
+                            doc.text(`Halaman ${doc.internal.getNumberOfPages()}`, pageWidth - 15, pageHeight - 10);
                         }
                     });
                     
                     // Add legend - Changed to vertical format
                     const legendY = doc.lastAutoTable.finalY + 10;
                     doc.setFontSize(10);
-                    doc.text('Keterangan:', 20, legendY);
-                    doc.text('H = Hadir', 20, legendY + 6);
-                    doc.text('I = Izin', 20, legendY + 12);
-                    doc.text('S = Sakit', 20, legendY + 18);
-                    doc.text('A = Alpha', 20, legendY + 24);
+                    doc.text('Keterangan:', margin, legendY);
+                    doc.text('H = Hadir', margin, legendY + 6);
+                    doc.text('I = Izin', margin, legendY + 12);
+                    doc.text('S = Sakit', margin, legendY + 18);
+                    doc.text('A = Alpha', margin, legendY + 24);
                     
                     // Save PDF
                     doc.save(`Rekap_Kehadiran_${student.nama}_${student.nis}.pdf`);
@@ -1341,5 +1403,5 @@
         // Initialize the app
         renderStudents();
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'963f1268d2d581a7',t:'MTc1MzMxNDU0MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'963f249950a0831b',t:'MTc1MzMxNTI4Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
